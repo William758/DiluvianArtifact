@@ -1,12 +1,12 @@
 # DiluvianArtifact
 
-Artifact of the Diluvian - Enables all Diluvian modifiers.
+Artifact of Diluvian - Enables all Diluvian modifiers.
 
 ![effects](https://i.imgur.com/YE3KlYn.png)
 
 Artifact of the Eclipse - Enables all Eclipse modifiers.
 
-Artifact of the Instability - Spending too long in a stage causes an endless stream of meteors to rain down from the sky.
+Artifact of Instability - Spending too long in a stage causes an endless stream of meteors to rain down from the sky.
 
 ## Credits:
 
@@ -19,5 +19,7 @@ Requires Bepinex and HookGenPatcher.
 Use r2modman or place inside of Risk of Rain 2/Bepinex/Plugins/
 
 ## Changelog:
+
+v1.0.1 - Limit count and overlap from Artifact of Instability secondary effects. All Artifact of Instability effects activate after defeating Mithrix.
 
 v1.0.0 - Initial Release.
