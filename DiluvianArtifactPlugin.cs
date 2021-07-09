@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using RoR2.ContentManagement;
 using System;
 using UnityEngine;
@@ -20,7 +20,7 @@ namespace TPDespair.DiluvianArtifact
 
 	public class DiluvianArtifactPlugin : BaseUnityPlugin
 	{
-		public const string ModVer = "1.0.0";
+		public const string ModVer = "1.0.1";
 		public const string ModName = "DiluvianArtifact";
 		public const string ModGuid = "com.TPDespair.DiluvianArtifact";
 
@@ -108,7 +108,7 @@ namespace TPDespair.DiluvianArtifact
 
 		public void FixedUpdate()
 		{
-			ZetUnstabifact.OnFixedUpdate();
+			InstabilityController.OnFixedUpdate();
 		}
 
 
