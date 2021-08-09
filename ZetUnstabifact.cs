@@ -8,30 +8,59 @@ namespace TPDespair.DiluvianArtifact
 {
 	public static class ZetUnstabifact
 	{
+		private static bool customHaunt = false;
+
+
+
 		internal static void Init()
 		{
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_ZETUNSTABIFACT_NAME", "Artifact of Instability");
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_ZETUNSTABIFACT_DESC", "Spending too long in a stage causes an endless stream of meteors to rain down from the sky.");
 
+			// server only
 			SceneDirector.onPostPopulateSceneServer += ResetInstabilityController;
 			Stage.onServerStageComplete += DisableInstabilityController;
-			Run.onRunDestroyGlobal += DisableInstabilityController;
-			Stage.onStageStartGlobal += ClearLists;
+
+			// client and server
+			Run.onRunDestroyGlobal += OnRunDestroyed;
+			Stage.onStageStartGlobal += OnStageStarted;
 
 			MeteorImpactHook();
 			EffectManagerNetworkingHook();
-			BrotherHauntHook();
+
+			BrotherHauntEnterHook();
+			BrotherHauntUpdateHook();
+
+			HUDAwakeHook();
+			HUDUpdateHook();
 		}
 
 
 
-		private static void ResetInstabilityController(SceneDirector sceneDirector) { InstabilityController.Reset(); }
-		private static void DisableInstabilityController(Stage stage) { InstabilityController.Disable(); }
-		private static void DisableInstabilityController(Run run) { InstabilityController.Disable(); }
-		private static void ClearLists(Stage stage) 
+		private static void ResetInstabilityController(SceneDirector sceneDirector)
 		{
-			InstabilityController.clearBlockerList = true;
-			InstabilityController.NovaState.clearNovaList = true;
+			InstabilityController.CountdownDisplay.ServerSendSyncTime(0f, true);
+			InstabilityController.Reset();
+			customHaunt = false;
+		}
+		private static void DisableInstabilityController(Stage stage)
+		{
+			InstabilityController.CountdownDisplay.ServerSendSyncTime(0f, true);
+			InstabilityController.Disable();
+			customHaunt = false;
+		}
+
+		private static void OnRunDestroyed(Run run)
+		{
+			InstabilityController.CountdownDisplay.SetSyncTime(0f);
+			InstabilityController.Disable();
+			customHaunt = false;
+		}
+		private static void OnStageStarted(Stage stage) 
+		{
+			InstabilityController.CountdownDisplay.SetSyncTime(0f);
+			InstabilityController.MarkListsForClearing();
+			customHaunt = false;
 		}
 
 
@@ -63,7 +92,18 @@ namespace TPDespair.DiluvianArtifact
 			{
 				if ((int)index == 1758000 && !transmit)
 				{
-					InstabilityController.NovaState.CreateNova(data.origin);
+					if (data.genericUInt == 1u)
+					{
+						InstabilityController.NovaState.CreateNova(data.origin);
+					}
+					else if (data.genericUInt == 2u)
+					{
+						InstabilityController.CountdownDisplay.SetSyncTime(data.genericFloat);
+					}
+					else
+					{
+						Debug.LogWarning("Artifact of Instability - Unknown SpawnEffect : " + data.genericUInt);
+					}
 
 					return;
 				}
@@ -72,13 +112,45 @@ namespace TPDespair.DiluvianArtifact
 			};
 		}
 
-		private static void BrotherHauntHook()
+		private static void BrotherHauntEnterHook()
 		{
 			On.EntityStates.BrotherHaunt.FireRandomProjectiles.OnEnter += (orig, self) =>
 			{
 				orig(self);
 
-				InstabilityController.MoonActivation();
+				customHaunt = Run.instance && RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetUnstabifact);
+
+				if (customHaunt) InstabilityController.MoonActivation();
+			};
+		}
+
+		private static void BrotherHauntUpdateHook()
+		{
+			On.EntityStates.BrotherHaunt.FireRandomProjectiles.FixedUpdate += (orig, self) =>
+			{
+				if (customHaunt) self.chargeTimer = 1f;
+
+				orig(self);
+			};
+		}
+
+		private static void HUDAwakeHook()
+		{
+			On.RoR2.UI.HUD.Awake += (orig, self) =>
+			{
+				orig(self);
+
+				InstabilityController.CountdownDisplay.InitializeUI(self);
+			};
+		}
+
+		private static void HUDUpdateHook()
+		{
+			On.RoR2.UI.HUD.Update += (orig, self) =>
+			{
+				orig(self);
+
+				InstabilityController.CountdownDisplay.UpdateUI();
 			};
 		}
 	}
