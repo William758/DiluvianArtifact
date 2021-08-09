@@ -20,6 +20,8 @@ Use r2modman or place inside of Risk of Rain 2/Bepinex/Plugins/
 
 ## Changelog:
 
+v1.0.2 - Added countdown timer for Artifact of Instability.
+
 v1.0.1 - Limit count and overlap from Artifact of Instability secondary effects. All Artifact of Instability effects activate after defeating Mithrix.
 
 v1.0.0 - Initial Release.
