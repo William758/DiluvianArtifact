@@ -1,6 +1,7 @@
-﻿using RoR2;
+using RoR2;
 using RoR2.Navigation;
 using RoR2.Projectile;
+using RoR2.UI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
@@ -54,6 +55,8 @@ namespace TPDespair.DiluvianArtifact
 			clearBlockerList = false;
 		}
 
+
+
 		internal static void OnMeteorImpact(Vector3 position)
 		{
 			if (ScorchState.activated || NovaState.activated)
@@ -106,22 +109,33 @@ namespace TPDespair.DiluvianArtifact
 
 
 
+		internal static void MarkListsForClearing()
+		{
+			clearBlockerList = true;
+			NovaState.clearNovaList = true;
+		}
+
 		internal static void MoonActivation()
 		{
-			if (Run.instance && !enabled && RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetUnstabifact))
+			if (!enabled && NetworkServer.active)
 			{
+				CountdownDisplay.sendSyncTime = false;
+
+				enabled = true;
 				reset = false;
 				timer = 3f;
-				stopwatch = 1200f;
+				stopwatch = 3600f;
+
 				SetupValues();
-				FissureState.activation = 99999f;
-				enabled = true;
+
 				Debug.LogWarning("Artifact of Instability - BaseDamage : " + baseDamage);
 			}
 		}
 
 		internal static void Reset()
 		{
+			CountdownDisplay.sendSyncTime = false;
+
 			enabled = false;
 			reset = true;
 			timer = 3f;
@@ -135,20 +149,21 @@ namespace TPDespair.DiluvianArtifact
 
 		internal static void Disable()
 		{
+			CountdownDisplay.sendSyncTime = false;
+
 			enabled = false;
 			reset = false;
 			timer = 99999f;
 			stopwatch = -99999f;
 		}
 
-
-
 		private static void SetupValues()
 		{
 			baseDamage = 24f * Mathf.Pow(Run.instance.difficultyCoefficient, 0.75f);
-			//baseDamage *= 0.01f;
+			//baseDamage *= 0.05f;
 			baseTime = 120f + 240f * Mathf.Pow(0.9f, Run.instance.loopClearCount);
-			//baseTime *= 0.01f;
+			//baseTime *= 0.0833f;
+
 			MeteorState.activation = baseTime;
 			FissureState.activation = baseTime * 1.166667f;
 			ScorchState.activation = baseTime * 1.333333f;
@@ -198,11 +213,15 @@ namespace TPDespair.DiluvianArtifact
 			stopwatch = 0f;
 			SetupValues();
 
+			CountdownDisplay.sendSyncTime = false;
+
 			if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetUnstabifact))
 			{
 				if (TeleporterInteraction.instance)
 				{
 					enabled = true;
+					CountdownDisplay.sendSyncTime = true;
+					CountdownDisplay.ServerSendSyncTime(MeteorState.activation);
 					Debug.LogWarning("Artifact of Instability - BaseTimer : " + baseTime + " , BaseDamage : " + baseDamage);
 				}
 				else
@@ -220,19 +239,141 @@ namespace TPDespair.DiluvianArtifact
 			{
 				MeteorState.activated = true;
 				MeteorState.StartStorm();
+
+				CountdownDisplay.ServerSendSyncTime(FissureState.activation - stopwatch);
 			}
 			if (!FissureState.activated && stopwatch > FissureState.activation)
 			{
 				FissureState.activated = true;
 				FissureState.ResetCharges();
+
+				CountdownDisplay.ServerSendSyncTime(ScorchState.activation - stopwatch);
 			}
 			if (!ScorchState.activated && stopwatch > ScorchState.activation)
 			{
 				ScorchState.activated = true;
+
+				CountdownDisplay.ServerSendSyncTime(NovaState.activation - stopwatch);
 			}
 			if (!NovaState.activated && stopwatch > NovaState.activation)
 			{
 				NovaState.activated = true;
+			}
+		}
+
+
+
+		internal static class CountdownDisplay
+		{
+			private static GameObject displayPanel;
+			private static GameObject displayText;
+			private static HGTextMeshProUGUI textMesh;
+
+			internal static bool sendSyncTime = false;
+			internal static float syncTime = 0f;
+			private static string currentText = "";
+
+			internal static void ServerSendSyncTime(float offset, bool force = false)
+			{
+				if (sendSyncTime || force)
+				{
+					float time = Run.instance.GetRunStopwatch() + offset;
+
+					EffectManager.SpawnEffect((EffectIndex)1758000, new EffectData { genericUInt = 2u, genericFloat = time }, true);
+				}
+			}
+
+			internal static void InitializeUI(HUD hud)
+			{
+				displayPanel = new GameObject("UnstabifactPanel");
+				RectTransform panelTransform = displayPanel.AddComponent<RectTransform>();
+
+				displayPanel.transform.SetParent(hud.runStopwatchTimerTextController.transform);
+				displayPanel.transform.SetAsLastSibling();
+
+				displayText = new GameObject("UnstabifactText");
+				RectTransform textTransform = displayText.AddComponent<RectTransform>();
+				textMesh = displayText.AddComponent<HGTextMeshProUGUI>();
+
+				displayText.transform.SetParent(displayPanel.transform);
+
+				panelTransform.localPosition = new Vector3(0, 0, 0);
+				panelTransform.anchorMin = new Vector2(0, 0);
+				panelTransform.anchorMax = new Vector2(0, 0);
+				panelTransform.localScale = Vector3.one;
+				panelTransform.pivot = new Vector2(0, 1);
+				panelTransform.sizeDelta = new Vector2(80, 40);
+				panelTransform.anchoredPosition = new Vector2(80, 64);
+				panelTransform.eulerAngles = new Vector3(0, 5f, 0);
+
+				textTransform.localPosition = Vector3.zero;
+				textTransform.anchorMin = Vector2.zero;
+				textTransform.anchorMax = Vector2.one;
+				textTransform.localScale = Vector3.one;
+				textTransform.sizeDelta = new Vector2(-12, -12);
+				textTransform.anchoredPosition = Vector2.zero;
+
+				textMesh.enableAutoSizing = false;
+				textMesh.fontSize = 10;
+				textMesh.faceColor = new Color(0.875f,0.75f,1f);
+				textMesh.alignment = TMPro.TextAlignmentOptions.MidlineRight;
+				textMesh.richText = true;
+
+				textMesh.SetText("");
+			}
+
+			internal static void UpdateUI()
+			{
+				if (textMesh != null)
+				{
+					string text = "";
+
+					if (syncTime > 0f && Run.instance)
+					{
+						float runStopwatch = Run.instance.GetRunStopwatch();
+
+						if (runStopwatch < syncTime)
+						{
+							float timeLeft = syncTime - runStopwatch;
+
+							text = FormatTimer(timeLeft);
+						}
+					}
+
+					if (text != currentText)
+					{
+						currentText = text;
+
+						textMesh.SetText("<mspace=6>" + text + "</mspace>");
+					}
+				}
+			}
+
+			private static string FormatTimer(float time)
+			{
+				time = Mathf.Ceil(time * 100f);
+
+				float a, b;
+
+				if (time >= 6000)
+				{
+					a = Mathf.Floor(time / 6000f);
+					b = Mathf.Floor((time % 6000f) / 100f);
+
+					return a + ":" + b.ToString("00");
+				}
+				else
+				{
+					a = Mathf.Floor(time / 100f);
+					b = Mathf.Floor(time % 100f);
+
+					return a + "." + b.ToString("00");
+				}
+			}
+
+			internal static void SetSyncTime(float time)
+			{
+				syncTime = time;
 			}
 		}
 
@@ -336,6 +477,11 @@ namespace TPDespair.DiluvianArtifact
 			private static List<Nova> activeNova = new List<Nova>();
 			internal static bool clearNovaList = false;
 
+			internal static void ServerSendNovaEffect(Vector3 position)
+			{
+				EffectManager.SpawnEffect((EffectIndex)1758000, new EffectData { genericUInt = 1u, origin = position }, true);
+			}
+
 			internal static void FixedUpdate()
 			{
 				for (int i = 0; i < activeNova.Count; i++)
@@ -356,11 +502,6 @@ namespace TPDespair.DiluvianArtifact
 				}
 
 				clearNovaList = false;
-			}
-
-			internal static void ServerSendNovaEffect(Vector3 position)
-			{
-				EffectManager.SpawnEffect((EffectIndex)1758000, new EffectData { origin = position }, true);
 			}
 
 			internal static void CreateNova(Vector3 position)
@@ -386,6 +527,8 @@ namespace TPDespair.DiluvianArtifact
 					radius = 12.5f,
 				}.Fire();
 			}
+
+
 
 			private class Nova
 			{
