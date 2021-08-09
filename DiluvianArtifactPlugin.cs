@@ -20,7 +20,7 @@ namespace TPDespair.DiluvianArtifact
 
 	public class DiluvianArtifactPlugin : BaseUnityPlugin
 	{
-		public const string ModVer = "1.0.1";
+		public const string ModVer = "1.0.2";
 		public const string ModName = "DiluvianArtifact";
 		public const string ModGuid = "com.TPDespair.DiluvianArtifact";
 
