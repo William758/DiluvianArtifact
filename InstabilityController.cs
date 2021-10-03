@@ -11,6 +11,8 @@ namespace TPDespair.DiluvianArtifact
 {
 	public static class InstabilityController
 	{
+		internal static bool disableFixedUpdate = true;
+
 		public static bool enabled = false;
 		public static bool reset = false;
 
@@ -174,7 +176,7 @@ namespace TPDespair.DiluvianArtifact
 
 		internal static void OnFixedUpdate()
 		{
-			if (!Run.instance) return;
+			if (disableFixedUpdate || !Run.instance) return;
 
 			CacheEffectData();
 
@@ -215,7 +217,7 @@ namespace TPDespair.DiluvianArtifact
 
 			CountdownDisplay.sendSyncTime = false;
 
-			if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetUnstabifact))
+			if (ZetUnstabifact.Enabled)
 			{
 				if (TeleporterInteraction.instance)
 				{
