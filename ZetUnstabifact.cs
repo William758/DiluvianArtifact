@@ -12,8 +12,32 @@ namespace TPDespair.DiluvianArtifact
 
 
 
+		private static int state = 0;
+
+		public static bool Enabled
+		{
+			get
+			{
+				if (state < 1) return false;
+				else if (state > 1) return true;
+				else
+				{
+					if (RunArtifactManager.instance && RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetUnstabifact)) return true;
+
+					return false;
+				}
+			}
+		}
+
+
+
 		internal static void Init()
 		{
+			state = DiluvianArtifactPlugin.UnstabifactEnable.Value;
+			if (state < 1) return;
+
+			InstabilityController.disableFixedUpdate = false;
+
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_ZETUNSTABIFACT_NAME", "Artifact of Instability");
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_ZETUNSTABIFACT_DESC", "Spending too long in a stage causes an endless stream of meteors to rain down from the sky.");
 
@@ -118,7 +142,7 @@ namespace TPDespair.DiluvianArtifact
 			{
 				orig(self);
 
-				customHaunt = Run.instance && RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetUnstabifact);
+				customHaunt = Run.instance && Enabled;
 
 				if (customHaunt) InstabilityController.MoonActivation();
 			};
