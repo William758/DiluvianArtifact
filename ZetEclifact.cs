@@ -1,4 +1,4 @@
-﻿using MonoMod.Cil;
+using MonoMod.Cil;
 using RoR2;
 using System;
 using UnityEngine;
@@ -7,8 +7,30 @@ namespace TPDespair.DiluvianArtifact
 {
 	public static class ZetEclifact
 	{
+		private static int state = 0;
+
+		public static bool Enabled
+		{
+			get
+			{
+				if (state < 1) return false;
+				else if (state > 1) return true;
+				else
+				{
+					if (RunArtifactManager.instance && RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact)) return true;
+
+					return false;
+				}
+			}
+		}
+
+
+
 		internal static void Init()
 		{
+			state = DiluvianArtifactPlugin.EclifactEnable.Value;
+			if (state < 1) return;
+
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_ZETECLIFACT_NAME", "Artifact of the Eclipse");
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_ZETECLIFACT_DESC", "Enables all Eclipse modifiers.\n\n<style=cStack>>Ally Starting Health: <style=cDeath>-50%</style>\n>Teleporter Radius: <style=cDeath>-50%</style>\n>Ally Fall Damage: <style=cDeath>+100% and lethal</style>\n>Enemy Speed: <style=cDeath>+40%</style>\n>Ally Healing: <style=cDeath>-50%</style>\n>Enemy Gold Drops: <style=cDeath>-20%</style>\n>Enemy Cooldowns: <style=cDeath>-50%</style>\n>Allies receive <style=cDeath>permanent damage</style></style>");
 
@@ -42,10 +64,7 @@ namespace TPDespair.DiluvianArtifact
 
 					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact))
-						{
-							return DifficultyIndex.Eclipse1;
-						}
+						if (Enabled) return DifficultyIndex.Eclipse1;
 
 						return diffIndex;
 					});
@@ -75,10 +94,7 @@ namespace TPDespair.DiluvianArtifact
 
 					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact))
-						{
-							return DifficultyIndex.Eclipse2;
-						}
+						if (Enabled) return DifficultyIndex.Eclipse2;
 
 						return diffIndex;
 					});
@@ -108,10 +124,7 @@ namespace TPDespair.DiluvianArtifact
 
 					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact))
-						{
-							return DifficultyIndex.Eclipse3;
-						}
+						if (Enabled) return DifficultyIndex.Eclipse3;
 
 						return diffIndex;
 					});
@@ -141,10 +154,7 @@ namespace TPDespair.DiluvianArtifact
 
 					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact))
-						{
-							return DifficultyIndex.Eclipse4;
-						}
+						if (Enabled) return DifficultyIndex.Eclipse4;
 
 						return diffIndex;
 					});
@@ -174,10 +184,7 @@ namespace TPDespair.DiluvianArtifact
 
 					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact))
-						{
-							return DifficultyIndex.Eclipse5;
-						}
+						if (Enabled) return DifficultyIndex.Eclipse5;
 
 						return diffIndex;
 					});
@@ -207,10 +214,7 @@ namespace TPDespair.DiluvianArtifact
 
 					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact))
-						{
-							return DifficultyIndex.Eclipse6;
-						}
+						if (Enabled) return DifficultyIndex.Eclipse6;
 
 						return diffIndex;
 					});
@@ -240,10 +244,7 @@ namespace TPDespair.DiluvianArtifact
 
 					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact))
-						{
-							return DifficultyIndex.Eclipse7;
-						}
+						if (Enabled) return DifficultyIndex.Eclipse7;
 
 						return diffIndex;
 					});
@@ -273,10 +274,7 @@ namespace TPDespair.DiluvianArtifact
 
 					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact))
-						{
-							return DifficultyIndex.Eclipse8;
-						}
+						if (Enabled) return DifficultyIndex.Eclipse8;
 
 						return diffIndex;
 					});
