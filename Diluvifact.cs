@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using RoR2;
 using System;
@@ -9,8 +9,30 @@ namespace TPDespair.DiluvianArtifact
 {
 	public static class Diluvifact
 	{
+		private static int state = 0;
+
+		public static bool Enabled
+		{
+			get
+			{
+				if (state < 1) return false;
+				else if (state > 1) return true;
+				else
+				{
+					if (RunArtifactManager.instance && RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.Diluvifact)) return true;
+
+					return false;
+				}
+			}
+		}
+
+
+
 		internal static void Init()
 		{
+			state = DiluvianArtifactPlugin.DiluvifactEnable.Value;
+			if (state < 1) return;
+
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_DILUVIFACT_NAME", "Artifact of Diluvian");
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_DILUVIFACT_DESC", "Enables all Diluvian modifiers.\n\n<style=cStack>>Ally Healing: <style=cDeath>-25%</style>\n>Ally Block Chance: <style=cDeath>Unlucky</style>\n>Oneshot Protection: <style=cDeath>Disabled</style>\n>Elite Cost: <style=cDeath>-20%</style>\n>Enemies <style=cDeath>regenerate 2% HP/s</style> outside of combat.\n>Blood Shrines <style=cDeath>disable healing</style> for <style=cDeath>8s</style>.</style>");
 
@@ -80,7 +102,7 @@ namespace TPDespair.DiluvianArtifact
 			{
 				if (NetworkServer.active)
 				{
-					if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.Diluvifact))
+					if (Enabled)
 					{
 						if (self.body && self.body.teamComponent.teamIndex == TeamIndex.Player)
 						{
@@ -117,7 +139,7 @@ namespace TPDespair.DiluvianArtifact
 					c.Emit(OpCodes.Ldarg, 0);
 					c.EmitDelegate<Func<HealthComponent, float>>((healthComponent) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.Diluvifact))
+						if (Enabled)
 						{
 							if (healthComponent.body && healthComponent.body.teamComponent.teamIndex == TeamIndex.Player) return -1f;
 						}
@@ -138,7 +160,7 @@ namespace TPDespair.DiluvianArtifact
 			{
 				orig(self);
 
-				if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.Diluvifact))
+				if (Enabled)
 				{
 					self.hasOneShotProtection = false;
 					self.oneShotProtectionFraction = 0f;
@@ -170,7 +192,7 @@ namespace TPDespair.DiluvianArtifact
 					{
 						if (Run.instance)
 						{
-							if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.Diluvifact))
+							if (Enabled)
 							{
 								float extraCost = mult - 1f;
 								mult -= extraCost * 0.2f;
@@ -193,7 +215,7 @@ namespace TPDespair.DiluvianArtifact
 			{
 				orig(self);
 
-				if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.Diluvifact))
+				if (Enabled)
 				{
 					if (self.outOfDanger && self.teamComponent.teamIndex == TeamIndex.Monster)
 					{
@@ -226,7 +248,7 @@ namespace TPDespair.DiluvianArtifact
 					c.Emit(OpCodes.Ldloc, 0);
 					c.EmitDelegate<Action<CharacterBody>>((self) =>
 					{
-						if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.Diluvifact))
+						if (Enabled)
 						{
 							if (self) self.AddTimedBuff(RoR2Content.Buffs.HealingDisabled, 8f);
 						}
