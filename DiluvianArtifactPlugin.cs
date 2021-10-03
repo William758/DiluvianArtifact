@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Configuration;
 using RoR2.ContentManagement;
 using System;
 using UnityEngine;
@@ -20,7 +21,7 @@ namespace TPDespair.DiluvianArtifact
 
 	public class DiluvianArtifactPlugin : BaseUnityPlugin
 	{
-		public const string ModVer = "1.0.2";
+		public const string ModVer = "1.0.3";
 		public const string ModName = "DiluvianArtifact";
 		public const string ModGuid = "com.TPDespair.DiluvianArtifact";
 
@@ -30,6 +31,58 @@ namespace TPDespair.DiluvianArtifact
 		public static Dictionary<string, string> SyzygyTokens = new Dictionary<string, string>();
 
 
+
+		public static ConfigEntry<int> DiluvifactEnable { get; set; }
+		public static ConfigEntry<int> UnstabifactEnable { get; set; }
+		public static ConfigEntry<int> EclifactEnable { get; set; }
+
+
+
+		public void Awake()
+		{
+			RoR2Application.isModded = true;
+			NetworkModCompatibilityHelper.networkModList = NetworkModCompatibilityHelper.networkModList.Append(ModGuid + ":" + ModVer);
+
+			ConfigSetup(Config);
+
+			ContentManager.collectContentPackProviders += ContentManager_collectContentPackProviders;
+
+			LanguageOverride();
+
+			Diluvifact.Init();
+			ZetUnstabifact.Init();
+			ZetEclifact.Init();
+
+			//On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
+		}
+
+		public void FixedUpdate()
+		{
+			InstabilityController.OnFixedUpdate();
+		}
+
+
+
+		private static void ConfigSetup(ConfigFile Config)
+		{
+			DiluvifactEnable = Config.Bind(
+				"Artifacts", "diluvifactEnable", 1,
+				"Artifact of Diluvian. 0 = Disabled, 1 = Artifact Available, 2 = Always Active"
+			);
+			UnstabifactEnable = Config.Bind(
+				"Artifacts", "unstabifactEnable", 1,
+				"Artifact of Instability. 0 = Disabled, 1 = Artifact Available, 2 = Always Active"
+			);
+			EclifactEnable = Config.Bind(
+				"Artifacts", "eclifactEnable", 1,
+				"Artifact of the Eclipse. 0 = Disabled, 1 = Artifact Available, 2 = Always Active"
+			);
+		}
+
+		private void ContentManager_collectContentPackProviders(ContentManager.AddContentPackProviderDelegate addContentPackProvider)
+		{
+			addContentPackProvider(new DiluvianArtifactContent());
+		}
 
 		public static Sprite CreateSprite(byte[] resourceBytes, Color fallbackColor)
 		{
@@ -88,38 +141,6 @@ namespace TPDespair.DiluvianArtifact
 			return tex;
 		}
 
-
-
-		public void Awake()
-		{
-			RoR2Application.isModded = true;
-			NetworkModCompatibilityHelper.networkModList = NetworkModCompatibilityHelper.networkModList.Append(ModGuid + ":" + ModVer);
-
-			ContentManager.collectContentPackProviders += ContentManager_collectContentPackProviders;
-
-			LanguageOverride();
-
-			Diluvifact.Init();
-			ZetEclifact.Init();
-			ZetUnstabifact.Init();
-
-			//On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
-		}
-
-		public void FixedUpdate()
-		{
-			InstabilityController.OnFixedUpdate();
-		}
-
-
-
-		private void ContentManager_collectContentPackProviders(ContentManager.AddContentPackProviderDelegate addContentPackProvider)
-		{
-			addContentPackProvider(new DiluvianArtifactContent());
-		}
-
-
-
 		private static void LanguageOverride()
 		{
 			On.RoR2.Language.TokenIsRegistered += (orig, self, token) =>
@@ -145,7 +166,8 @@ namespace TPDespair.DiluvianArtifact
 					{
 						if (SyzygyTokens.ContainsKey(token)) return SyzygyTokens[token];
 					}
-					if (Run.instance && RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.Diluvifact)) {
+					if (Run.instance && Diluvifact.Enabled)
+					{
 						if (token == "ITEM_BEAR_DESC") return "<style=cIsHealing>15%</style> <style=cStack>(+15% per stack)</style> chance to <style=cIsHealing>block</style> incoming damage. <style=cDeath>Unlucky</style>.";
 					}
 
@@ -160,10 +182,10 @@ namespace TPDespair.DiluvianArtifact
 		{
 			if (Run.instance)
 			{
-				if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.Diluvifact))
+				if (Diluvifact.Enabled)
 				{
 					if (Run.instance.selectedDifficulty >= DifficultyIndex.Eclipse8) return true;
-					if (RunArtifactManager.instance.IsArtifactEnabled(DiluvianArtifactContent.Artifacts.ZetEclifact)) return true;
+					if (ZetEclifact.Enabled) return true;
 				}
 			}
 
