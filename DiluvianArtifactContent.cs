@@ -1,6 +1,7 @@
-﻿using RoR2;
+using RoR2;
 using RoR2.ContentManagement;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TPDespair.DiluvianArtifact
@@ -18,7 +19,7 @@ namespace TPDespair.DiluvianArtifact
 		{
 			Artifacts.Create();
 
-			contentPack.artifactDefs.Add(Artifacts.artifactDefs);
+			contentPack.artifactDefs.Add(Artifacts.artifactDefs.ToArray());
 			args.ReportProgress(1f);
 			yield break;
 		}
@@ -44,32 +45,45 @@ namespace TPDespair.DiluvianArtifact
 			public static ArtifactDef ZetEclifact;
 			public static ArtifactDef ZetUnstabifact;
 
-			public static ArtifactDef[] artifactDefs;
+			public static List<ArtifactDef> artifactDefs = new List<ArtifactDef>();
 
 			public static void Create()
 			{
-				Diluvifact = ScriptableObject.CreateInstance<ArtifactDef>();
-				Diluvifact.cachedName = "ARTIFACT_DILUVIFACT";
-				Diluvifact.nameToken = "ARTIFACT_DILUVIFACT_NAME";
-				Diluvifact.descriptionToken = "ARTIFACT_DILUVIFACT_DESC";
-				Diluvifact.smallIconSelectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zetdiluvianabstract_selected, Color.magenta);
-				Diluvifact.smallIconDeselectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zetdiluvianabstract_deselected, Color.gray);
+				if (DiluvianArtifactPlugin.DiluvifactEnable.Value == 1)
+				{
+					Diluvifact = ScriptableObject.CreateInstance<ArtifactDef>();
+					Diluvifact.cachedName = "ARTIFACT_DILUVIFACT";
+					Diluvifact.nameToken = "ARTIFACT_DILUVIFACT_NAME";
+					Diluvifact.descriptionToken = "ARTIFACT_DILUVIFACT_DESC";
+					Diluvifact.smallIconSelectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zetdiluvianabstract_selected, Color.magenta);
+					Diluvifact.smallIconDeselectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zetdiluvianabstract_deselected, Color.gray);
 
-				ZetEclifact = ScriptableObject.CreateInstance<ArtifactDef>();
-				ZetEclifact.cachedName = "ARTIFACT_ZETECLIFACT";
-				ZetEclifact.nameToken = "ARTIFACT_ZETECLIFACT_NAME";
-				ZetEclifact.descriptionToken = "ARTIFACT_ZETECLIFACT_DESC";
-				ZetEclifact.smallIconSelectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zeteclipse_selected, Color.magenta);
-				ZetEclifact.smallIconDeselectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zeteclipse_deselected, Color.gray);
+					artifactDefs.Add(Diluvifact);
+				}
 
-				ZetUnstabifact = ScriptableObject.CreateInstance<ArtifactDef>();
-				ZetUnstabifact.cachedName = "ARTIFACT_ZETUNSTABIFACT";
-				ZetUnstabifact.nameToken = "ARTIFACT_ZETUNSTABIFACT_NAME";
-				ZetUnstabifact.descriptionToken = "ARTIFACT_ZETUNSTABIFACT_DESC";
-				ZetUnstabifact.smallIconSelectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zetunstable_selected, Color.magenta);
-				ZetUnstabifact.smallIconDeselectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zetunstable_deselected, Color.gray);
+				if (DiluvianArtifactPlugin.UnstabifactEnable.Value == 1)
+				{
+					ZetUnstabifact = ScriptableObject.CreateInstance<ArtifactDef>();
+					ZetUnstabifact.cachedName = "ARTIFACT_ZETUNSTABIFACT";
+					ZetUnstabifact.nameToken = "ARTIFACT_ZETUNSTABIFACT_NAME";
+					ZetUnstabifact.descriptionToken = "ARTIFACT_ZETUNSTABIFACT_DESC";
+					ZetUnstabifact.smallIconSelectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zetunstable_selected, Color.magenta);
+					ZetUnstabifact.smallIconDeselectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zetunstable_deselected, Color.gray);
 
-				artifactDefs = new ArtifactDef[] { Diluvifact, ZetEclifact, ZetUnstabifact };
+					artifactDefs.Add(ZetUnstabifact);
+				}
+
+				if (DiluvianArtifactPlugin.EclifactEnable.Value == 1)
+				{
+					ZetEclifact = ScriptableObject.CreateInstance<ArtifactDef>();
+					ZetEclifact.cachedName = "ARTIFACT_ZETECLIFACT";
+					ZetEclifact.nameToken = "ARTIFACT_ZETECLIFACT_NAME";
+					ZetEclifact.descriptionToken = "ARTIFACT_ZETECLIFACT_DESC";
+					ZetEclifact.smallIconSelectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zeteclipse_selected, Color.magenta);
+					ZetEclifact.smallIconDeselectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zeteclipse_deselected, Color.gray);
+
+					artifactDefs.Add(ZetEclifact);
+				}
 			}
 		}
 	}
