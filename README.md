@@ -1,5 +1,7 @@
 # DiluvianArtifact
 
+Can configure artifacts to be disabled or always active.
+
 Artifact of Diluvian - Enables all Diluvian modifiers.
 
 ![effects](https://i.imgur.com/YE3KlYn.png)
@@ -19,6 +21,8 @@ Requires Bepinex and HookGenPatcher.
 Use r2modman or place inside of Risk of Rain 2/Bepinex/Plugins/
 
 ## Changelog:
+
+v1.0.3 - Config to disable or set always active.
 
 v1.0.2 - Added countdown timer for Artifact of Instability.
 
