@@ -21,7 +21,7 @@ namespace TPDespair.DiluvianArtifact
 
 	public class DiluvianArtifactPlugin : BaseUnityPlugin
 	{
-		public const string ModVer = "1.0.3";
+		public const string ModVer = "1.0.4";
 		public const string ModName = "DiluvianArtifact";
 		public const string ModGuid = "com.TPDespair.DiluvianArtifact";
 
@@ -33,6 +33,7 @@ namespace TPDespair.DiluvianArtifact
 
 
 		public static ConfigEntry<int> DiluvifactEnable { get; set; }
+		public static ConfigEntry<float> DiluvifactDifficulty { get; set; }
 		public static ConfigEntry<int> UnstabifactEnable { get; set; }
 		public static ConfigEntry<int> EclifactEnable { get; set; }
 
@@ -68,6 +69,10 @@ namespace TPDespair.DiluvianArtifact
 			DiluvifactEnable = Config.Bind(
 				"Artifacts", "diluvifactEnable", 1,
 				"Artifact of Diluvian. 0 = Disabled, 1 = Artifact Available, 2 = Always Active"
+			);
+			DiluvifactDifficulty = Config.Bind(
+				"Artifacts", "diluvifactDifficultyMult", 1.2f,
+				"Artifact of Diluvian difficulty multiplier. Set to 1 or lower to disable."
 			);
 			UnstabifactEnable = Config.Bind(
 				"Artifacts", "unstabifactEnable", 1,
