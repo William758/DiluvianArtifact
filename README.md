@@ -4,11 +4,11 @@ Can configure artifacts to be disabled or always active.
 
 Artifact of Diluvian - Enables all Diluvian modifiers.
 
-![effects](https://i.imgur.com/YE3KlYn.png)
+![effects](https://i.imgur.com/F9nKEGX.png)
 
 Artifact of the Eclipse - Enables all Eclipse modifiers.
 
-Artifact of Instability - Spending too long in a stage causes an endless stream of meteors to rain down from the sky.
+Artifact of Instability - Spending too long in a stage causes a lunar storm.
 
 ## Credits:
 
@@ -21,6 +21,8 @@ Requires Bepinex and HookGenPatcher.
 Use r2modman or place inside of Risk of Rain 2/Bepinex/Plugins/
 
 ## Changelog:
+
+v1.0.4 - Diluvian now has a difficulty multiplier and stops monsters from being stunned from heavy hits. Damage from Artifact of Instability effects now scale with the current difficulty instead of the difficulty at the start of the stage. Added extra effects to Artifact of Instability.
 
 v1.0.3 - Config to disable or set always active.
 
