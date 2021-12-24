@@ -18,8 +18,11 @@ namespace TPDespair.DiluvianArtifact
 		public IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
 		{
 			Artifacts.Create();
+			Buffs.Create();
 
 			contentPack.artifactDefs.Add(Artifacts.artifactDefs.ToArray());
+			contentPack.buffDefs.Add(Buffs.buffDefs.ToArray());
+
 			args.ReportProgress(1f);
 			yield break;
 		}
@@ -83,6 +86,29 @@ namespace TPDespair.DiluvianArtifact
 					ZetEclifact.smallIconDeselectedSprite = DiluvianArtifactPlugin.CreateSprite(Properties.Resources.zeteclipse_deselected, Color.gray);
 
 					artifactDefs.Add(ZetEclifact);
+				}
+			}
+		}
+
+		public static class Buffs
+		{
+			public static BuffDef ZetLunarBleed;
+
+			public static List<BuffDef> buffDefs = new List<BuffDef>();
+
+
+			public static void Create()
+			{
+				if (DiluvianArtifactPlugin.UnstabifactEnable.Value > 0)
+				{
+					ZetLunarBleed = ScriptableObject.CreateInstance<BuffDef>();
+					ZetLunarBleed.name = "ZetLunarBleed";
+					ZetLunarBleed.buffColor = new Color(0.3f, 0.6f, 1f);
+					ZetLunarBleed.canStack = true;
+					ZetLunarBleed.isDebuff = true;
+					ZetLunarBleed.iconSprite = Resources.Load<Sprite>("Textures/BuffIcons/texBuffBleedingIcon");
+
+					buffDefs.Add(ZetLunarBleed);
 				}
 			}
 		}
