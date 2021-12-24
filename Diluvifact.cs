@@ -10,6 +10,7 @@ namespace TPDespair.DiluvianArtifact
 	public static class Diluvifact
 	{
 		private static int state = 0;
+		private static float difficultyMult = 1f;
 
 		public static bool Enabled
 		{
@@ -33,17 +34,27 @@ namespace TPDespair.DiluvianArtifact
 			state = DiluvianArtifactPlugin.DiluvifactEnable.Value;
 			if (state < 1) return;
 
+			difficultyMult = DiluvianArtifactPlugin.DiluvifactDifficulty.Value;
+
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_DILUVIFACT_NAME", "Artifact of Diluvian");
-			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_DILUVIFACT_DESC", "Enables all Diluvian modifiers.\n\n<style=cStack>>Ally Healing: <style=cDeath>-25%</style>\n>Ally Block Chance: <style=cDeath>Unlucky</style>\n>Oneshot Protection: <style=cDeath>Disabled</style>\n>Elite Cost: <style=cDeath>-20%</style>\n>Enemies <style=cDeath>regenerate 2% HP/s</style> outside of combat.\n>Blood Shrines <style=cDeath>disable healing</style> for <style=cDeath>8s</style>.</style>");
+			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_DILUVIFACT_DESC", "Enables all Diluvian modifiers.\n" + GetDifficultyMultText() + "\n<style=cStack>>Ally Healing: <style=cDeath>-20%</style>\n>Ally Block Chance: <style=cDeath>Unlucky</style>\n>Oneshot Protection: <style=cDeath>Disabled</style>\n>Elite Cost: <style=cDeath>-20%</style>\n>Enemies <style=cDeath>cannot be stunned</style> from damage taken.\n>Enemies <style=cDeath>regenerate 2% HP/s</style> outside of combat.\n>Blood Shrines <style=cDeath>disable healing</style> for <style=cDeath>8s</style>.</style>");
 
 			SetupSyzygyTokens();
 
+			if (difficultyMult > 1f) DifficultyHook();
 			HealHook();
 			BlockHook();
 			OneshotHook();
 			EliteCostHook();
+			HitStunHook();
 			MonsterRegenHook();
 			BloodShrineHook();
+		}
+
+		private static string GetDifficultyMultText()
+		{
+			if (difficultyMult > 1f) return "\n<style=cStack>>Difficulty Multiplier: <style=cDeath>+" + ((difficultyMult - 1f) * 100f).ToString("0.##") + "%</style>";
+			return "";
 		}
 
 
@@ -95,21 +106,53 @@ namespace TPDespair.DiluvianArtifact
 
 
 
+		private static void DifficultyHook()
+		{
+			IL.RoR2.Run.RecalculateDifficultyCoefficentInternal += (il) =>
+			{
+				ILCursor c = new ILCursor(il);
+
+				bool found = c.TryGotoNext(
+					x => x.MatchStloc(9)
+				);
+
+				if (found)
+				{
+					c.Index += 1;
+
+					c.EmitDelegate<Func<float>>(() =>
+					{
+						if (Enabled) return difficultyMult;
+
+						return 1f;
+					});
+
+					c.Emit(OpCodes.Dup);
+					c.Emit(OpCodes.Ldloc, 7);
+					c.Emit(OpCodes.Mul);
+					c.Emit(OpCodes.Stloc, 7);
+					c.Emit(OpCodes.Ldloc, 8);
+					c.Emit(OpCodes.Mul);
+					c.Emit(OpCodes.Stloc, 8);
+				}
+				else
+				{
+					Debug.LogWarning("DifficultyHook Failed");
+				}
+			};
+		}
 
 		private static void HealHook()
 		{
 			On.RoR2.HealthComponent.Heal += (orig, self, amount, procChainMask, nonRegen) =>
 			{
-				if (NetworkServer.active)
+				if (NetworkServer.active && Enabled)
 				{
-					if (Enabled)
+					if (self.body && self.body.teamComponent.teamIndex == TeamIndex.Player)
 					{
-						if (self.body && self.body.teamComponent.teamIndex == TeamIndex.Player)
+						if (!(self.currentEquipmentIndex == RoR2Content.Equipment.LunarPotion.equipmentIndex && !procChainMask.HasProc(ProcType.LunarPotionActivation)))
 						{
-							if (!(self.currentEquipmentIndex == RoR2Content.Equipment.LunarPotion.equipmentIndex && !procChainMask.HasProc(ProcType.LunarPotionActivation)))
-							{
-								amount *= 0.75f;
-							}
+							amount *= 0.8f;
 						}
 					}
 				}
@@ -206,6 +249,16 @@ namespace TPDespair.DiluvianArtifact
 				{
 					Debug.LogWarning("EliteCostHook Failed");
 				}
+			};
+		}
+
+		private static void HitStunHook()
+		{
+			On.RoR2.SetStateOnHurt.Start += (orig, self) =>
+			{
+				orig(self);
+
+				if (Enabled) self.canBeHitStunned = false;
 			};
 		}
 
