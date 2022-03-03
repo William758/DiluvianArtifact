@@ -53,6 +53,7 @@ namespace TPDespair.DiluvianArtifact
 
 			SpawnCard.onSpawnedServerGlobal += OnCardSpawned;
 			FallenChimeraHook();
+			ChimeraDamageResistHook();
 
 			// client and server
 			Run.onRunDestroyGlobal += OnRunDestroyed;
@@ -217,7 +218,7 @@ namespace TPDespair.DiluvianArtifact
 			InstabilityController.Disable();
 			customHaunt = false;
 		}
-		private static void OnStageStarted(Stage stage) 
+		private static void OnStageStarted(Stage stage)
 		{
 			InstabilityController.Display.SetSyncTime(0f);
 			InstabilityController.Display.SetDifficulty(0f);
@@ -229,17 +230,17 @@ namespace TPDespair.DiluvianArtifact
 
 		private static void OnCardSpawned(SpawnCard.SpawnResult result)
 		{
-			CharacterMaster master = result.spawnedInstance.gameObject.GetComponent<CharacterMaster>();
+			if (!result.success) return;
 
-			if (master)
+			CharacterMaster master = result.spawnedInstance ? result.spawnedInstance.GetComponent<CharacterMaster>() : null;
+			if (!master) return;
+
+			CharacterBody body = master.GetBody();
+			if (body && body.bodyIndex == InstabilityController.lunarChimeraBodyIndex)
 			{
-				CharacterBody body = master.GetBody();
-				if (body && body.bodyIndex == InstabilityController.lunarChimeraBodyIndex)
+				if (body.teamComponent.teamIndex == TeamIndex.Monster)
 				{
-					if (body.teamComponent.teamIndex == TeamIndex.Monster)
-					{
-						InstabilityController.LunarState.UberifyChimera(master);
-					}
+					InstabilityController.LunarState.UberifyChimera(master);
 				}
 			}
 		}
@@ -259,6 +260,49 @@ namespace TPDespair.DiluvianArtifact
 				}
 
 				orig(self, collider);
+			};
+		}
+
+		private static void ChimeraDamageResistHook()
+		{
+			IL.RoR2.HealthComponent.TakeDamage += (il) =>
+			{
+				ILCursor c = new ILCursor(il);
+
+				// find : store damageinfo.damage into variable
+				bool found = c.TryGotoNext(
+					x => x.MatchLdarg(1),
+					x => x.MatchLdfld<DamageInfo>("damage"),
+					x => x.MatchStloc(6)
+				);
+
+				if (found)
+				{
+					c.Index += 3;
+
+					c.Emit(OpCodes.Ldloc, 6);
+					c.Emit(OpCodes.Ldloc, 2);
+					c.Emit(OpCodes.Ldarg, 0);
+					c.EmitDelegate<Func<float, TeamIndex, HealthComponent, float>>((damage, atkTeam, healthComponent) =>
+					{
+						CharacterBody self = healthComponent.body;
+
+						if (atkTeam != TeamIndex.Player)
+						{
+							if (self && InstabilityController.LunarState.IsUberChimera(self))
+							{
+								damage *= 0.125f;
+							}
+						}
+
+						return damage;
+					});
+					c.Emit(OpCodes.Stloc, 6);
+				}
+				else
+				{
+					Debug.LogWarning("ChimeraDamageResistHook Failed");
+				}
 			};
 		}
 
