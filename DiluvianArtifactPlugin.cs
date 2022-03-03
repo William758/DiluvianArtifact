@@ -21,7 +21,7 @@ namespace TPDespair.DiluvianArtifact
 
 	public class DiluvianArtifactPlugin : BaseUnityPlugin
 	{
-		public const string ModVer = "1.0.4";
+		public const string ModVer = "1.1.0";
 		public const string ModName = "DiluvianArtifact";
 		public const string ModGuid = "com.TPDespair.DiluvianArtifact";
 
@@ -33,8 +33,12 @@ namespace TPDespair.DiluvianArtifact
 
 
 		public static ConfigEntry<int> DiluvifactEnable { get; set; }
+		public static ConfigEntry<bool> SyzygyText { get; set; }
+		public static ConfigEntry<bool> SyzygyHideScore { get; set; }
 		public static ConfigEntry<float> DiluvifactDifficulty { get; set; }
 		public static ConfigEntry<int> UnstabifactEnable { get; set; }
+		public static ConfigEntry<float> UnstabifactBaseTimer { get; set; }
+		public static ConfigEntry<float> UnstabifactPhaseTimer { get; set; }
 		public static ConfigEntry<int> EclifactEnable { get; set; }
 
 
@@ -70,13 +74,29 @@ namespace TPDespair.DiluvianArtifact
 				"Artifacts", "diluvifactEnable", 1,
 				"Artifact of Diluvian. 0 = Disabled, 1 = Artifact Available, 2 = Always Active"
 			);
+			SyzygyText = Config.Bind(
+				"Artifacts", "syzygyText", true,
+				"Diluvian and Eclipse 8 change some text."
+			);
+			SyzygyHideScore = Config.Bind(
+				"Artifacts", "syzygyHideScore", true,
+				"Diluvian and Eclipse 8 hides scores on run report."
+			);
 			DiluvifactDifficulty = Config.Bind(
 				"Artifacts", "diluvifactDifficultyMult", 1.2f,
-				"Artifact of Diluvian difficulty multiplier. Set to 1 or lower to disable."
+				"Diluvian difficulty multiplier. Set to 1 or lower to disable."
 			);
 			UnstabifactEnable = Config.Bind(
 				"Artifacts", "unstabifactEnable", 1,
 				"Artifact of Instability. 0 = Disabled, 1 = Artifact Available, 2 = Always Active"
+			);
+			UnstabifactBaseTimer = Config.Bind(
+				"Artifacts", "unstabifactBaseTime", 360f,
+				"Instability base timer. Timer for first stage of lunar storm."
+			);
+			UnstabifactPhaseTimer = Config.Bind(
+				"Artifacts", "unstabifactPhaseTime", 60f,
+				"Instability phase timer. Timer for each phase of lunar storm after the first."
 			);
 			EclifactEnable = Config.Bind(
 				"Artifacts", "eclifactEnable", 1,
@@ -171,10 +191,12 @@ namespace TPDespair.DiluvianArtifact
 					{
 						if (SyzygyTokens.ContainsKey(token)) return SyzygyTokens[token];
 					}
+					/*
 					if (Run.instance && Diluvifact.Enabled)
 					{
 						if (token == "ITEM_BEAR_DESC") return "<style=cIsHealing>15%</style> <style=cStack>(+15% per stack)</style> chance to <style=cIsHealing>block</style> incoming damage. <style=cDeath>Unlucky</style>.";
 					}
+					*/
 
 					if (LangTokens.ContainsKey(token)) return LangTokens[token];
 				}
@@ -185,6 +207,8 @@ namespace TPDespair.DiluvianArtifact
 
 		private static bool TriggerSyzygyText()
 		{
+			if (!SyzygyText.Value) return false;
+
 			if (Run.instance)
 			{
 				if (Diluvifact.Enabled)
