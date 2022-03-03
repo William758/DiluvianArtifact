@@ -26,6 +26,38 @@ namespace TPDespair.DiluvianArtifact
 
 
 
+		private static void OnArtifactEnabled(RunArtifactManager runArtifactManager, ArtifactDef artifactDef)
+		{
+			if (artifactDef == DiluvianArtifactContent.Artifacts.ZetEclifact)
+			{
+				IL.RoR2.CharacterMaster.OnBodyStart += Eclipse1Hook;
+				IL.RoR2.HoldoutZoneController.FixedUpdate += Eclipse2Hook;
+				IL.RoR2.GlobalEventManager.OnCharacterHitGroundServer += Eclipse3Hook;
+				IL.RoR2.CharacterBody.RecalculateStats += Eclipse4Hook;
+				IL.RoR2.HealthComponent.Heal += Eclipse5Hook;
+				IL.RoR2.DeathRewards.OnKilledServer += Eclipse6Hook;
+				IL.RoR2.CharacterBody.RecalculateStats += Eclipse7Hook;
+				IL.RoR2.HealthComponent.TakeDamage += Eclipse8Hook;
+			}
+		}
+
+		private static void OnArtifactDisabled(RunArtifactManager runArtifactManager, ArtifactDef artifactDef)
+		{
+			if (artifactDef == DiluvianArtifactContent.Artifacts.ZetEclifact)
+			{
+				IL.RoR2.CharacterMaster.OnBodyStart -= Eclipse1Hook;
+				IL.RoR2.HoldoutZoneController.FixedUpdate -= Eclipse2Hook;
+				IL.RoR2.GlobalEventManager.OnCharacterHitGroundServer -= Eclipse3Hook;
+				IL.RoR2.CharacterBody.RecalculateStats -= Eclipse4Hook;
+				IL.RoR2.HealthComponent.Heal -= Eclipse5Hook;
+				IL.RoR2.DeathRewards.OnKilledServer -= Eclipse6Hook;
+				IL.RoR2.CharacterBody.RecalculateStats -= Eclipse7Hook;
+				IL.RoR2.HealthComponent.TakeDamage -= Eclipse8Hook;
+			}
+		}
+
+
+
 		internal static void Init()
 		{
 			state = DiluvianArtifactPlugin.EclifactEnable.Value;
@@ -34,256 +66,210 @@ namespace TPDespair.DiluvianArtifact
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_ZETECLIFACT_NAME", "Artifact of the Eclipse");
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_ZETECLIFACT_DESC", "Enables all Eclipse modifiers.\n\n<style=cStack>>Ally Starting Health: <style=cDeath>-50%</style>\n>Teleporter Radius: <style=cDeath>-50%</style>\n>Ally Fall Damage: <style=cDeath>+100% and lethal</style>\n>Enemy Speed: <style=cDeath>+40%</style>\n>Ally Healing: <style=cDeath>-50%</style>\n>Enemy Gold Drops: <style=cDeath>-20%</style>\n>Enemy Cooldowns: <style=cDeath>-50%</style>\n>Allies receive <style=cDeath>permanent damage</style></style>");
 
-			Eclipse1Hook();
-			Eclipse2Hook();
-			Eclipse3Hook();
-			Eclipse4Hook();
-			Eclipse5Hook();
-			Eclipse6Hook();
-			Eclipse7Hook();
-			Eclipse8Hook();
+			RunArtifactManager.onArtifactEnabledGlobal += OnArtifactEnabled;
+			RunArtifactManager.onArtifactDisabledGlobal += OnArtifactDisabled;
 		}
 
 
 
-		private static void Eclipse1Hook()
+		private static void Eclipse1Hook(ILContext il)
 		{
-			IL.RoR2.CharacterMaster.OnBodyStart += (il) =>
+			ILCursor c = new ILCursor(il);
+
+			bool found = c.TryGotoNext(
+				x => x.MatchCall<Run>("get_instance"),
+				x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
+				x => x.MatchLdcI4(3)
+			);
+
+			if (found)
 			{
-				ILCursor c = new ILCursor(il);
+				c.Index += 2;
 
-				bool found = c.TryGotoNext(
-					x => x.MatchCall<Run>("get_instance"),
-					x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
-					x => x.MatchLdcI4(3)
-				);
-
-				if (found)
+				c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 				{
-					c.Index += 2;
-
-					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
-					{
-						if (Enabled) return DifficultyIndex.Eclipse1;
-
-						return diffIndex;
-					});
-				}
-				else
-				{
-					Debug.LogWarning("Eclipse1Hook Failed");
-				}
-			};
+					return DifficultyIndex.Eclipse1;
+				});
+			}
+			else
+			{
+				Debug.LogWarning("Eclipse1Hook Failed");
+			}
 		}
 
-		private static void Eclipse2Hook()
+		private static void Eclipse2Hook(ILContext il)
 		{
-			IL.RoR2.HoldoutZoneController.FixedUpdate += (il) =>
+			ILCursor c = new ILCursor(il);
+
+			bool found = c.TryGotoNext(
+				x => x.MatchCall<Run>("get_instance"),
+				x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
+				x => x.MatchLdcI4(4)
+			);
+
+			if (found)
 			{
-				ILCursor c = new ILCursor(il);
+				c.Index += 2;
 
-				bool found = c.TryGotoNext(
-					x => x.MatchCall<Run>("get_instance"),
-					x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
-					x => x.MatchLdcI4(4)
-				);
-
-				if (found)
+				c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 				{
-					c.Index += 2;
-
-					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
-					{
-						if (Enabled) return DifficultyIndex.Eclipse2;
-
-						return diffIndex;
-					});
-				}
-				else
-				{
-					Debug.LogWarning("Eclipse2Hook Failed");
-				}
-			};
+					return DifficultyIndex.Eclipse2;
+				});
+			}
+			else
+			{
+				Debug.LogWarning("Eclipse2Hook Failed");
+			}
 		}
 
-		private static void Eclipse3Hook()
+		private static void Eclipse3Hook(ILContext il)
 		{
-			IL.RoR2.GlobalEventManager.OnCharacterHitGroundServer += (il) =>
+			ILCursor c = new ILCursor(il);
+
+			bool found = c.TryGotoNext(
+				x => x.MatchCall<Run>("get_instance"),
+				x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
+				x => x.MatchLdcI4(5)
+			);
+
+			if (found)
 			{
-				ILCursor c = new ILCursor(il);
+				c.Index += 2;
 
-				bool found = c.TryGotoNext(
-					x => x.MatchCall<Run>("get_instance"),
-					x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
-					x => x.MatchLdcI4(5)
-				);
-
-				if (found)
+				c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 				{
-					c.Index += 2;
-
-					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
-					{
-						if (Enabled) return DifficultyIndex.Eclipse3;
-
-						return diffIndex;
-					});
-				}
-				else
-				{
-					Debug.LogWarning("Eclipse3Hook Failed");
-				}
-			};
+					return DifficultyIndex.Eclipse3;
+				});
+			}
+			else
+			{
+				Debug.LogWarning("Eclipse3Hook Failed");
+			}
 		}
 
-		private static void Eclipse4Hook()
+		private static void Eclipse4Hook(ILContext il)
 		{
-			IL.RoR2.CharacterBody.RecalculateStats += (il) =>
+			ILCursor c = new ILCursor(il);
+
+			bool found = c.TryGotoNext(
+				x => x.MatchCall<Run>("get_instance"),
+				x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
+				x => x.MatchLdcI4(6)
+			);
+
+			if (found)
 			{
-				ILCursor c = new ILCursor(il);
+				c.Index += 2;
 
-				bool found = c.TryGotoNext(
-					x => x.MatchCall<Run>("get_instance"),
-					x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
-					x => x.MatchLdcI4(6)
-				);
-
-				if (found)
+				c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 				{
-					c.Index += 2;
-
-					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
-					{
-						if (Enabled) return DifficultyIndex.Eclipse4;
-
-						return diffIndex;
-					});
-				}
-				else
-				{
-					Debug.LogWarning("Eclipse4Hook Failed");
-				}
-			};
+					return DifficultyIndex.Eclipse4;
+				});
+			}
+			else
+			{
+				Debug.LogWarning("Eclipse4Hook Failed");
+			}
 		}
 
-		private static void Eclipse5Hook()
+		private static void Eclipse5Hook(ILContext il)
 		{
-			IL.RoR2.HealthComponent.Heal += (il) =>
+			ILCursor c = new ILCursor(il);
+
+			bool found = c.TryGotoNext(
+				x => x.MatchCall<Run>("get_instance"),
+				x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
+				x => x.MatchLdcI4(7)
+			);
+
+			if (found)
 			{
-				ILCursor c = new ILCursor(il);
+				c.Index += 2;
 
-				bool found = c.TryGotoNext(
-					x => x.MatchCall<Run>("get_instance"),
-					x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
-					x => x.MatchLdcI4(7)
-				);
-
-				if (found)
+				c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 				{
-					c.Index += 2;
-
-					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
-					{
-						if (Enabled) return DifficultyIndex.Eclipse5;
-
-						return diffIndex;
-					});
-				}
-				else
-				{
-					Debug.LogWarning("Eclipse5Hook Failed");
-				}
-			};
+					return DifficultyIndex.Eclipse5;
+				});
+			}
+			else
+			{
+				Debug.LogWarning("Eclipse5Hook Failed");
+			}
 		}
 
-		private static void Eclipse6Hook()
+		private static void Eclipse6Hook(ILContext il)
 		{
-			IL.RoR2.DeathRewards.OnKilledServer += (il) =>
+			ILCursor c = new ILCursor(il);
+
+			bool found = c.TryGotoNext(
+				x => x.MatchCall<Run>("get_instance"),
+				x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
+				x => x.MatchLdcI4(8)
+			);
+
+			if (found)
 			{
-				ILCursor c = new ILCursor(il);
+				c.Index += 2;
 
-				bool found = c.TryGotoNext(
-					x => x.MatchCall<Run>("get_instance"),
-					x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
-					x => x.MatchLdcI4(8)
-				);
-
-				if (found)
+				c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 				{
-					c.Index += 2;
-
-					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
-					{
-						if (Enabled) return DifficultyIndex.Eclipse6;
-
-						return diffIndex;
-					});
-				}
-				else
-				{
-					Debug.LogWarning("Eclipse6Hook Failed");
-				}
-			};
+					return DifficultyIndex.Eclipse6;
+				});
+			}
+			else
+			{
+				Debug.LogWarning("Eclipse6Hook Failed");
+			}
 		}
 
-		private static void Eclipse7Hook()
+		private static void Eclipse7Hook(ILContext il)
 		{
-			IL.RoR2.CharacterBody.RecalculateStats += (il) =>
+			ILCursor c = new ILCursor(il);
+
+			bool found = c.TryGotoNext(
+				x => x.MatchCall<Run>("get_instance"),
+				x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
+				x => x.MatchLdcI4(9)
+			);
+
+			if (found)
 			{
-				ILCursor c = new ILCursor(il);
+				c.Index += 2;
 
-				bool found = c.TryGotoNext(
-					x => x.MatchCall<Run>("get_instance"),
-					x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
-					x => x.MatchLdcI4(9)
-				);
-
-				if (found)
+				c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 				{
-					c.Index += 2;
-
-					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
-					{
-						if (Enabled) return DifficultyIndex.Eclipse7;
-
-						return diffIndex;
-					});
-				}
-				else
-				{
-					Debug.LogWarning("Eclipse7Hook Failed");
-				}
-			};
+					return DifficultyIndex.Eclipse7;
+				});
+			}
+			else
+			{
+				Debug.LogWarning("Eclipse7Hook Failed");
+			}
 		}
 
-		private static void Eclipse8Hook()
+		private static void Eclipse8Hook(ILContext il)
 		{
-			IL.RoR2.HealthComponent.TakeDamage += (il) =>
+			ILCursor c = new ILCursor(il);
+
+			bool found = c.TryGotoNext(
+				x => x.MatchCall<Run>("get_instance"),
+				x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
+				x => x.MatchLdcI4(10)
+			);
+
+			if (found)
 			{
-				ILCursor c = new ILCursor(il);
+				c.Index += 2;
 
-				bool found = c.TryGotoNext(
-					x => x.MatchCall<Run>("get_instance"),
-					x => x.MatchCallvirt<Run>("get_selectedDifficulty"),
-					x => x.MatchLdcI4(10)
-				);
-
-				if (found)
+				c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
 				{
-					c.Index += 2;
-
-					c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
-					{
-						if (Enabled) return DifficultyIndex.Eclipse8;
-
-						return diffIndex;
-					});
-				}
-				else
-				{
-					Debug.LogWarning("Eclipse8Hook Failed");
-				}
-			};
+					return DifficultyIndex.Eclipse8;
+				});
+			}
+			else
+			{
+				Debug.LogWarning("Eclipse8Hook Failed");
+			}
 		}
 	}
 }
