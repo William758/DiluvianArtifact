@@ -4,7 +4,7 @@ Can configure artifacts to be disabled or always active.
 
 Artifact of Diluvian - Enables all Diluvian modifiers.
 
-![effects](https://i.imgur.com/F9nKEGX.png)
+![effects](https://i.imgur.com/VDe3WEY.png)
 
 Artifact of the Eclipse - Enables all Eclipse modifiers.
 
@@ -21,6 +21,10 @@ Requires Bepinex and HookGenPatcher.
 Use r2modman or place inside of Risk of Rain 2/Bepinex/Plugins/
 
 ## Changelog:
+
+v1.1.0 - Updated for latest game version. Block chance is halved instead of unlucky.
+
+v1.0.5 - Fix FailedCardSpawn NRE
 
 v1.0.4 - Diluvian now has a difficulty multiplier and stops monsters from being stunned from heavy hits. Damage from Artifact of Instability effects now scale with the current difficulty instead of the difficulty at the start of the stage. Added extra effects to Artifact of Instability.
 
