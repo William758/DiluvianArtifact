@@ -21,6 +21,7 @@ namespace TPDespair.DiluvianArtifact
 
 		public static float baseDamage = 24f;
 		public static float baseTime = 360f;
+		public static float phaseInterval = 60f;
 
 		public static float damageFactor = 1f;
 		public static float timeFactor = 1f;
@@ -179,8 +180,9 @@ namespace TPDespair.DiluvianArtifact
 
 				Display.ServerSendDifficulty(damageFactor);
 
-				LunarState.activation2 = 3600f + (60f * timeFactor);
-				LunarState.activation3 = 3600f + (120f * timeFactor);
+				LunarState.activation2 = 3600f + (45f * timeFactor);
+				LunarState.activation3 = 3600f + (90f * timeFactor);
+				BleedState.activation2 = 3600f + (135f * timeFactor);
 
 				//Debug.LogWarning("Artifact of Instability - BaseDamage : " + baseDamage);
 			}
@@ -226,29 +228,31 @@ namespace TPDespair.DiluvianArtifact
 			damageFactor = Mathf.Pow(Run.instance.difficultyCoefficient, 0.75f);
 			timeFactor = (1f + 2f * Mathf.Pow(0.9f, Run.instance.loopClearCount)) / 3f;
 
-			baseDamage = 24f * damageFactor;
-			//baseDamage *= 0.05f;
-			baseTime = 360f * timeFactor;
-			//baseTime *= 0.0833f;
+			baseTime = DiluvianArtifactPlugin.UnstabifactBaseTimer.Value;
+			phaseInterval = DiluvianArtifactPlugin.UnstabifactPhaseTimer.Value;
 
-			MeteorState.activation = BaseMinutes(6f);
-			FissureState.activation = BaseMinutes(7f);
-			ScorchState.activation = BaseMinutes(8f);
-			NovaState.activation = BaseMinutes(8f);
-			FissureState.activation2 = BaseMinutes(9f);
-			LunarState.activation = BaseMinutes(9f);
-			MeteorState.activation2 = BaseMinutes(10f);
-			BleedState.activation = BaseMinutes(10f);
-			FissureState.activation3 = BaseMinutes(11f);
-			MeteorState.activation3 = BaseMinutes(12f);
-			LunarState.activation2 = BaseMinutes(12f);
-			LunarState.activation3 = BaseMinutes(15f);
-			BleedState.activation2 = BaseMinutes(15f);
+			baseDamage = 24f * damageFactor;
+			baseTime *= timeFactor;
+			phaseInterval *=  timeFactor;
+
+			MeteorState.activation = GetPhaseTime(0);
+			FissureState.activation = GetPhaseTime(1);
+			ScorchState.activation = GetPhaseTime(2);
+			NovaState.activation = GetPhaseTime(2);
+			FissureState.activation2 = GetPhaseTime(3);
+			LunarState.activation = GetPhaseTime(3);
+			MeteorState.activation2 = GetPhaseTime(4);
+			BleedState.activation = GetPhaseTime(4);
+			FissureState.activation3 = GetPhaseTime(5);
+			MeteorState.activation3 = GetPhaseTime(6);
+			LunarState.activation2 = GetPhaseTime(6);
+			LunarState.activation3 = GetPhaseTime(9);
+			BleedState.activation2 = GetPhaseTime(9);
 		}
 
-		private static float BaseMinutes(float time)
+		private static float GetPhaseTime(int phase)
 		{
-			return baseTime * (time / 6f);
+			return baseTime + (phase * phaseInterval);
 		}
 
 		private static void RecalcDamageValue()
@@ -259,7 +263,6 @@ namespace TPDespair.DiluvianArtifact
 			{
 				damageFactor = newFactor;
 				baseDamage = 24f * damageFactor;
-				//baseDamage *= 0.05f;
 
 				MeteorState.UpdateDamage();
 				Display.ServerSendDifficulty(damageFactor);
@@ -330,10 +333,6 @@ namespace TPDespair.DiluvianArtifact
 					Display.ServerSendSyncTime(MeteorState.activation);
 					Display.ServerSendDifficulty(damageFactor);
 					//Debug.LogWarning("Artifact of Instability - BaseTimer : " + baseTime + " , BaseDamage : " + baseDamage);
-				}
-				else
-				{
-					//Debug.LogWarning("Artifact of Instability - TeleporterInteraction instance not found!");
 				}
 			}
 		}
@@ -429,7 +428,7 @@ namespace TPDespair.DiluvianArtifact
 
 
 
-			if (LunarState.activated2 &&!LunarState.activated3 && stopwatch > LunarState.activation3)
+			if (LunarState.activated2 && !LunarState.activated3 && stopwatch > LunarState.activation3)
 			{
 				LunarState.activated3 = true;
 				LunarState.ResetState(3);
@@ -478,7 +477,7 @@ namespace TPDespair.DiluvianArtifact
 				displayPanel = new GameObject("UnstabifactPanel");
 				RectTransform panelTransform = displayPanel.AddComponent<RectTransform>();
 
-				displayPanel.transform.SetParent(hud.runStopwatchTimerTextController.transform);
+				displayPanel.transform.SetParent(hud.gameModeUiInstance.transform);
 				displayPanel.transform.SetAsLastSibling();
 
 				displayTimeText = new GameObject("UnstabifactTimeText");
@@ -498,8 +497,8 @@ namespace TPDespair.DiluvianArtifact
 				panelTransform.anchorMax = new Vector2(0, 0);
 				panelTransform.localScale = Vector3.one;
 				panelTransform.pivot = new Vector2(0, 1);
-				panelTransform.sizeDelta = new Vector2(76, 40);
-				panelTransform.anchoredPosition = new Vector2(84, 64);
+				panelTransform.sizeDelta = new Vector2(80, 40);
+				panelTransform.anchoredPosition = new Vector2(32, 48);
 				panelTransform.eulerAngles = new Vector3(0, 5f, 0);
 
 				timeTextTransform.localPosition = Vector3.zero;
@@ -510,8 +509,8 @@ namespace TPDespair.DiluvianArtifact
 				timeTextTransform.anchoredPosition = Vector2.zero;
 
 				timeTextMesh.enableAutoSizing = false;
-				timeTextMesh.fontSize = 10;
-				timeTextMesh.faceColor = new Color(0.875f,0.75f,1f);
+				timeTextMesh.fontSize = 12;
+				timeTextMesh.faceColor = new Color(0.875f, 0.75f, 1f);
 				timeTextMesh.alignment = TMPro.TextAlignmentOptions.MidlineRight;
 				timeTextMesh.richText = true;
 
@@ -525,8 +524,8 @@ namespace TPDespair.DiluvianArtifact
 				diffTextTransform.anchoredPosition = Vector2.zero;
 
 				diffTextMesh.enableAutoSizing = false;
-				diffTextMesh.fontSize = 8;
-				diffTextMesh.faceColor = new Color(0.5f, 0.5f, 0.5f);
+				diffTextMesh.fontSize = 10;
+				diffTextMesh.faceColor = new Color(0.65f, 0.65f, 0.65f);
 				diffTextMesh.alignment = TMPro.TextAlignmentOptions.MidlineLeft;
 				diffTextMesh.richText = true;
 
@@ -555,7 +554,7 @@ namespace TPDespair.DiluvianArtifact
 					{
 						currentTimeText = text;
 
-						timeTextMesh.SetText("<mspace=6>" + text + "</mspace>");
+						timeTextMesh.SetText("<mspace=6.6>" + text + "</mspace>");
 					}
 				}
 
@@ -569,7 +568,7 @@ namespace TPDespair.DiluvianArtifact
 					{
 						currentDiffText = text;
 
-						diffTextMesh.SetText("<mspace=5>" + text + "</mspace>");
+						diffTextMesh.SetText("<mspace=5.5>" + text + "</mspace>");
 					}
 				}
 			}
@@ -634,7 +633,7 @@ namespace TPDespair.DiluvianArtifact
 
 			internal static void StartStorm()
 			{
-				GameObject MeteorStorm = UnityEngine.Object.Instantiate(Resources.Load<GameObject>("Prefabs/NetworkedObjects/MeteorStorm"), Vector3.zero, Quaternion.identity);
+				GameObject MeteorStorm = UnityEngine.Object.Instantiate(LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/MeteorStorm"), Vector3.zero, Quaternion.identity);
 				controller = MeteorStorm.GetComponent<MeteorStormController>();
 				controller.ownerDamage = baseDamage;
 				controller.waveCount = 9999999;
@@ -970,7 +969,7 @@ namespace TPDespair.DiluvianArtifact
 					crit = false,
 					baseForce = 0f,
 					bonusForce = Vector3.zero,
-					attackerFiltering = AttackerFiltering.NeverHit,
+					attackerFiltering = AttackerFiltering.NeverHitSelf,
 					damageColorIndex = DamageColorIndex.Default,
 					damageType = DamageType.CrippleOnHit,
 					procCoefficient = 0f,
@@ -1221,9 +1220,9 @@ namespace TPDespair.DiluvianArtifact
 				inventory.GiveItem(RoR2Content.Items.Knurl, 1);
 
 				inventory.GiveItem(RoR2Content.Items.LunarBadLuck, 1);
-				inventory.GiveItem(RoR2Content.Items.BoostDamage, Mathf.RoundToInt(3f * factor));
-				inventory.GiveItem(RoR2Content.Items.BoostHp, Mathf.RoundToInt(3f * factor));
 				inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, Mathf.RoundToInt(factor));
+				inventory.GiveItem(RoR2Content.Items.BoostDamage, Mathf.RoundToInt(3f * factor));
+				inventory.GiveItem(RoR2Content.Items.BoostHp, Mathf.RoundToInt(5f * factor));
 			}
 
 			private static void LeashUberChimera()
@@ -1242,7 +1241,7 @@ namespace TPDespair.DiluvianArtifact
 					SpawnCard spawnCard = ScriptableObject.CreateInstance<SpawnCard>();
 					spawnCard.hullSize = HullClassification.Human;
 					spawnCard.nodeGraphType = MapNodeGroup.GraphType.Ground;
-					spawnCard.prefab = Resources.Load<GameObject>("SpawnCards/HelperPrefab");
+					spawnCard.prefab = LegacyResourcesAPI.Load<GameObject>("SpawnCards/HelperPrefab");
 
 					foreach (CharacterBody leashBody in uberChimera)
 					{
@@ -1310,7 +1309,7 @@ namespace TPDespair.DiluvianArtifact
 				areaIndicatorPrefab = EntityStates.VagrantMonster.ChargeMegaNova.areaIndicatorPrefab;
 
 				lunarChimeraBodyIndex = BodyCatalog.FindBodyIndex("LunarGolemBody");
-				lunarChimeraSpawnCard = Resources.Load<SpawnCard>("SpawnCards/CharacterSpawnCards/cscLunarGolem");
+				lunarChimeraSpawnCard = LegacyResourcesAPI.Load<SpawnCard>("SpawnCards/CharacterSpawnCards/cscLunarGolem");
 			}
 		}
 	}
