@@ -106,7 +106,7 @@ namespace TPDespair.DiluvianArtifact
 					ZetLunarBleed.buffColor = new Color(0.3f, 0.6f, 1f);
 					ZetLunarBleed.canStack = true;
 					ZetLunarBleed.isDebuff = true;
-					ZetLunarBleed.iconSprite = Resources.Load<Sprite>("Textures/BuffIcons/texBuffBleedingIcon");
+					ZetLunarBleed.iconSprite = LegacyResourcesAPI.Load<Sprite>("Textures/BuffIcons/texBuffBleedingIcon");
 
 					buffDefs.Add(ZetLunarBleed);
 				}
