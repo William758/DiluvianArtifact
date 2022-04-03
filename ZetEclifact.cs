@@ -93,7 +93,42 @@ namespace TPDespair.DiluvianArtifact
 			}
 			else
 			{
-				Debug.LogWarning("Eclipse1Hook Failed");
+				found = c.TryGotoNext(
+					x => x.MatchCall<Run>("get_instance"),
+					x => x.MatchCallvirt<Run>("get_selectedDifficulty")
+				);
+
+				if (found)
+				{
+					int matchIndex = c.Index;
+
+					found = c.TryGotoNext(
+						x => x.MatchLdcI4(3),
+						x => x.MatchBlt(out _)
+					);
+
+					if (found)
+					{
+						int offset = c.Index - matchIndex;
+
+						if (offset <= 8)
+						{
+							c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
+							{
+								return DifficultyIndex.Eclipse1;
+							});
+						}
+						else
+						{
+							Debug.LogWarning("EclipseHook(1) Failed! - LdcI4 Offset [" + offset + "]");
+						}
+					}
+				}
+			}
+
+			if (!found)
+			{
+				Debug.LogWarning("EclipseHook(1) Failed!");
 			}
 		}
 
@@ -118,7 +153,42 @@ namespace TPDespair.DiluvianArtifact
 			}
 			else
 			{
-				Debug.LogWarning("Eclipse2Hook Failed");
+				found = c.TryGotoNext(
+					x => x.MatchCall<Run>("get_instance"),
+					x => x.MatchCallvirt<Run>("get_selectedDifficulty")
+				);
+
+				if (found)
+				{
+					int matchIndex = c.Index;
+
+					found = c.TryGotoNext(
+						x => x.MatchLdcI4(4),
+						x => x.MatchBlt(out _)
+					);
+
+					if (found)
+					{
+						int offset = c.Index - matchIndex;
+
+						if (offset <= 8)
+						{
+							c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
+							{
+								return DifficultyIndex.Eclipse2;
+							});
+						}
+						else
+						{
+							Debug.LogWarning("EclipseHook(2) Failed! - LdcI4 Offset [" + offset + "]");
+						}
+					}
+				}
+			}
+
+			if (!found)
+			{
+				Debug.LogWarning("EclipseHook(2) Failed!");
 			}
 		}
 
@@ -143,7 +213,42 @@ namespace TPDespair.DiluvianArtifact
 			}
 			else
 			{
-				Debug.LogWarning("Eclipse3Hook Failed");
+				found = c.TryGotoNext(
+					x => x.MatchCall<Run>("get_instance"),
+					x => x.MatchCallvirt<Run>("get_selectedDifficulty")
+				);
+
+				if (found)
+				{
+					int matchIndex = c.Index;
+
+					found = c.TryGotoNext(
+						x => x.MatchLdcI4(5),
+						x => x.MatchBlt(out _)
+					);
+
+					if (found)
+					{
+						int offset = c.Index - matchIndex;
+
+						if (offset <= 8)
+						{
+							c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
+							{
+								return DifficultyIndex.Eclipse3;
+							});
+						}
+						else
+						{
+							Debug.LogWarning("EclipseHook(3) Failed! - LdcI4 Offset [" + offset + "]");
+						}
+					}
+				}
+			}
+
+			if (!found)
+			{
+				Debug.LogWarning("EclipseHook(3) Failed!");
 			}
 		}
 
@@ -168,7 +273,42 @@ namespace TPDespair.DiluvianArtifact
 			}
 			else
 			{
-				Debug.LogWarning("Eclipse4Hook Failed");
+				found = c.TryGotoNext(
+					x => x.MatchCall<Run>("get_instance"),
+					x => x.MatchCallvirt<Run>("get_selectedDifficulty")
+				);
+
+				if (found)
+				{
+					int matchIndex = c.Index;
+
+					found = c.TryGotoNext(
+						x => x.MatchLdcI4(6),
+						x => x.MatchBlt(out _)
+					);
+
+					if (found)
+					{
+						int offset = c.Index - matchIndex;
+
+						if (offset <= 8)
+						{
+							c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
+							{
+								return DifficultyIndex.Eclipse4;
+							});
+						}
+						else
+						{
+							Debug.LogWarning("EclipseHook(4) Failed! - LdcI4 Offset [" + offset + "]");
+						}
+					}
+				}
+			}
+
+			if (!found)
+			{
+				Debug.LogWarning("EclipseHook(4) Failed!");
 			}
 		}
 
@@ -193,7 +333,42 @@ namespace TPDespair.DiluvianArtifact
 			}
 			else
 			{
-				Debug.LogWarning("Eclipse5Hook Failed");
+				found = c.TryGotoNext(
+					x => x.MatchCall<Run>("get_instance"),
+					x => x.MatchCallvirt<Run>("get_selectedDifficulty")
+				);
+
+				if (found)
+				{
+					int matchIndex = c.Index;
+
+					found = c.TryGotoNext(
+						x => x.MatchLdcI4(7),
+						x => x.MatchBlt(out _)
+					);
+
+					if (found)
+					{
+						int offset = c.Index - matchIndex;
+
+						if (offset <= 8)
+						{
+							c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
+							{
+								return DifficultyIndex.Eclipse5;
+							});
+						}
+						else
+						{
+							Debug.LogWarning("EclipseHook(5) Failed! - LdcI4 Offset [" + offset + "]");
+						}
+					}
+				}
+			}
+
+			if (!found)
+			{
+				Debug.LogWarning("EclipseHook(5) Failed!");
 			}
 		}
 
@@ -218,7 +393,42 @@ namespace TPDespair.DiluvianArtifact
 			}
 			else
 			{
-				Debug.LogWarning("Eclipse6Hook Failed");
+				found = c.TryGotoNext(
+					x => x.MatchCall<Run>("get_instance"),
+					x => x.MatchCallvirt<Run>("get_selectedDifficulty")
+				);
+
+				if (found)
+				{
+					int matchIndex = c.Index;
+
+					found = c.TryGotoNext(
+						x => x.MatchLdcI4(8),
+						x => x.MatchBlt(out _)
+					);
+
+					if (found)
+					{
+						int offset = c.Index - matchIndex;
+
+						if (offset <= 8)
+						{
+							c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
+							{
+								return DifficultyIndex.Eclipse6;
+							});
+						}
+						else
+						{
+							Debug.LogWarning("EclipseHook(6) Failed! - LdcI4 Offset [" + offset + "]");
+						}
+					}
+				}
+			}
+
+			if (!found)
+			{
+				Debug.LogWarning("EclipseHook(6) Failed!");
 			}
 		}
 
@@ -243,7 +453,49 @@ namespace TPDespair.DiluvianArtifact
 			}
 			else
 			{
-				Debug.LogWarning("Eclipse7Hook Failed");
+				found = c.TryGotoNext(
+					x => x.MatchStloc(88)
+				);
+
+				if (found)
+				{
+					found = c.TryGotoNext(
+						x => x.MatchCall<Run>("get_instance"),
+						x => x.MatchCallvirt<Run>("get_selectedDifficulty")
+					);
+
+					if (found)
+					{
+						int matchIndex = c.Index;
+
+						found = c.TryGotoNext(
+							x => x.MatchLdcI4(9),
+							x => x.MatchBlt(out _)
+						);
+
+						if (found)
+						{
+							int offset = c.Index - matchIndex;
+
+							if (offset <= 8)
+							{
+								c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
+								{
+									return DifficultyIndex.Eclipse7;
+								});
+							}
+							else
+							{
+								Debug.LogWarning("EclipseHook(7) Failed! - LdcI4 Offset [" + offset + "]");
+							}
+						}
+					}
+				}
+			}
+
+			if (!found)
+			{
+				Debug.LogWarning("EclipseHook(7) Failed!");
 			}
 		}
 
@@ -268,7 +520,42 @@ namespace TPDespair.DiluvianArtifact
 			}
 			else
 			{
-				Debug.LogWarning("Eclipse8Hook Failed");
+				found = c.TryGotoNext(
+					x => x.MatchCall<Run>("get_instance"),
+					x => x.MatchCallvirt<Run>("get_selectedDifficulty")
+				);
+
+				if (found)
+				{
+					int matchIndex = c.Index;
+
+					found = c.TryGotoNext(
+						x => x.MatchLdcI4(10),
+						x => x.MatchBlt(out _)
+					);
+
+					if (found)
+					{
+						int offset = c.Index - matchIndex;
+
+						if (offset <= 8)
+						{
+							c.EmitDelegate<Func<DifficultyIndex, DifficultyIndex>>((diffIndex) =>
+							{
+								return DifficultyIndex.Eclipse8;
+							});
+						}
+						else
+						{
+							Debug.LogWarning("EclipseHook(8) Failed! - LdcI4 Offset [" + offset + "]");
+						}
+					}
+				}
+			}
+
+			if (!found)
+			{
+				Debug.LogWarning("EclipseHook(8) Failed!");
 			}
 		}
 	}
