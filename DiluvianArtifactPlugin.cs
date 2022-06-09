@@ -1,4 +1,4 @@
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using RoR2.ContentManagement;
 using System;
@@ -21,7 +21,7 @@ namespace TPDespair.DiluvianArtifact
 
 	public class DiluvianArtifactPlugin : BaseUnityPlugin
 	{
-		public const string ModVer = "1.1.1";
+		public const string ModVer = "1.1.2";
 		public const string ModName = "DiluvianArtifact";
 		public const string ModGuid = "com.TPDespair.DiluvianArtifact";
 
@@ -36,6 +36,7 @@ namespace TPDespair.DiluvianArtifact
 		public static ConfigEntry<bool> SyzygyText { get; set; }
 		public static ConfigEntry<bool> SyzygyHideScore { get; set; }
 		public static ConfigEntry<float> DiluvifactDifficulty { get; set; }
+		public static ConfigEntry<bool> DiluvifactAntiHeal { get; set; }
 		public static ConfigEntry<int> UnstabifactEnable { get; set; }
 		public static ConfigEntry<float> UnstabifactBaseTimer { get; set; }
 		public static ConfigEntry<float> UnstabifactPhaseTimer { get; set; }
@@ -85,6 +86,10 @@ namespace TPDespair.DiluvianArtifact
 			DiluvifactDifficulty = Config.Bind(
 				"Artifacts", "diluvifactDifficultyMult", 1.2f,
 				"Diluvian difficulty multiplier. Set to 1 or lower to disable."
+			);
+			DiluvifactAntiHeal = Config.Bind(
+				"Artifacts", "diluvifactAntiHeal", true,
+				"Diluvian causes BloodShrines to disable healing for 8 seconds."
 			);
 			UnstabifactEnable = Config.Bind(
 				"Artifacts", "unstabifactEnable", 1,
@@ -191,12 +196,6 @@ namespace TPDespair.DiluvianArtifact
 					{
 						if (SyzygyTokens.ContainsKey(token)) return SyzygyTokens[token];
 					}
-					/*
-					if (Run.instance && Diluvifact.Enabled)
-					{
-						if (token == "ITEM_BEAR_DESC") return "<style=cIsHealing>15%</style> <style=cStack>(+15% per stack)</style> chance to <style=cIsHealing>block</style> incoming damage. <style=cDeath>Unlucky</style>.";
-					}
-					*/
 
 					if (LangTokens.ContainsKey(token)) return LangTokens[token];
 				}

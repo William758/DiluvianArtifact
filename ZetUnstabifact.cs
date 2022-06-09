@@ -1,4 +1,4 @@
-using RoR2;
+﻿using RoR2;
 using System;
 using System.Reflection;
 using UnityEngine;
@@ -198,15 +198,15 @@ namespace TPDespair.DiluvianArtifact
 
 		private static void ResetInstabilityController(SceneDirector sceneDirector)
 		{
-			InstabilityController.Display.ServerSendSyncTime(0f, true);
-			InstabilityController.Display.ServerSendDifficulty(0f);
+			InstabilityController.Display.ResetServerSyncTime();
+			InstabilityController.Display.SetServerDifficulty(0f);
 			InstabilityController.Reset();
 			customHaunt = false;
 		}
 		private static void DisableInstabilityController(Stage stage)
 		{
-			InstabilityController.Display.ServerSendSyncTime(0f, true);
-			InstabilityController.Display.ServerSendDifficulty(0f);
+			InstabilityController.Display.ResetServerSyncTime();
+			InstabilityController.Display.SetServerDifficulty(0f);
 			InstabilityController.Disable();
 			customHaunt = false;
 		}
@@ -376,6 +376,13 @@ namespace TPDespair.DiluvianArtifact
 					else if (data.genericUInt == 3u)
 					{
 						InstabilityController.Display.SetDifficulty(data.genericFloat);
+					}
+					else if (data.genericUInt == 4u)
+					{
+						if (!NetworkServer.active)
+						{
+							InstabilityController.Display.SetSyncTime(data.genericFloat);
+						}
 					}
 					else
 					{

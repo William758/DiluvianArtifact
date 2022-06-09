@@ -1,4 +1,4 @@
-using Mono.Cecil.Cil;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using RoR2;
 using System;
@@ -10,8 +10,6 @@ namespace TPDespair.DiluvianArtifact
 	public static class Diluvifact
 	{
 		private static int state = 0;
-
-		public static float difficultyMult = 1f;
 
 		public static bool Enabled
 		{
@@ -30,21 +28,37 @@ namespace TPDespair.DiluvianArtifact
 
 
 
+		private static void EnableEffects()
+		{
+			IL.RoR2.Run.RecalculateDifficultyCoefficentInternal += DifficultyHook;
+			On.RoR2.HealthComponent.Heal += HealMultHook;
+			IL.RoR2.HealthComponent.TakeDamage += BlockChanceHook;
+			On.RoR2.CharacterBody.RecalculateStats += OneshotHook;
+			IL.RoR2.CombatDirector.AttemptSpawnOnTarget += EliteCostHook;
+			On.RoR2.SetStateOnHurt.Start += HitStunHook;
+			On.RoR2.CharacterBody.RecalculateStats += MonsterRegenHook;
+			IL.RoR2.ShrineBloodBehavior.AddShrineStack += BloodShrineHook;
+		}
+
+		private static void DisableEffects()
+		{
+			IL.RoR2.Run.RecalculateDifficultyCoefficentInternal -= DifficultyHook;
+			On.RoR2.HealthComponent.Heal -= HealMultHook;
+			IL.RoR2.HealthComponent.TakeDamage -= BlockChanceHook;
+			On.RoR2.CharacterBody.RecalculateStats -= OneshotHook;
+			IL.RoR2.CombatDirector.AttemptSpawnOnTarget -= EliteCostHook;
+			On.RoR2.SetStateOnHurt.Start -= HitStunHook;
+			On.RoR2.CharacterBody.RecalculateStats -= MonsterRegenHook;
+			IL.RoR2.ShrineBloodBehavior.AddShrineStack -= BloodShrineHook;
+		}
+
+
+
 		private static void OnArtifactEnabled(RunArtifactManager runArtifactManager, ArtifactDef artifactDef)
 		{
 			if (artifactDef == DiluvianArtifactContent.Artifacts.Diluvifact)
 			{
-				if (difficultyMult > 1f)
-				{
-					IL.RoR2.Run.RecalculateDifficultyCoefficentInternal += DifficultyHook;
-				}
-				On.RoR2.HealthComponent.Heal += HealMultHook;
-				IL.RoR2.HealthComponent.TakeDamage += BlockChanceHook;
-				On.RoR2.CharacterBody.RecalculateStats += OneshotHook;
-				IL.RoR2.CombatDirector.AttemptSpawnOnTarget += EliteCostHook;
-				On.RoR2.SetStateOnHurt.Start += HitStunHook;
-				On.RoR2.CharacterBody.RecalculateStats += MonsterRegenHook;
-				IL.RoR2.ShrineBloodBehavior.AddShrineStack += BloodShrineHook;
+				EnableEffects();
 			}
 		}
 
@@ -52,17 +66,7 @@ namespace TPDespair.DiluvianArtifact
 		{
 			if (artifactDef == DiluvianArtifactContent.Artifacts.Diluvifact)
 			{
-				if (difficultyMult > 1f)
-				{
-					IL.RoR2.Run.RecalculateDifficultyCoefficentInternal -= DifficultyHook;
-				}
-				On.RoR2.HealthComponent.Heal -= HealMultHook;
-				IL.RoR2.HealthComponent.TakeDamage -= BlockChanceHook;
-				On.RoR2.CharacterBody.RecalculateStats -= OneshotHook;
-				IL.RoR2.CombatDirector.AttemptSpawnOnTarget -= EliteCostHook;
-				On.RoR2.SetStateOnHurt.Start -= HitStunHook;
-				On.RoR2.CharacterBody.RecalculateStats -= MonsterRegenHook;
-				IL.RoR2.ShrineBloodBehavior.AddShrineStack -= BloodShrineHook;
+				DisableEffects();
 			}
 		}
 
@@ -73,20 +77,32 @@ namespace TPDespair.DiluvianArtifact
 			state = DiluvianArtifactPlugin.DiluvifactEnable.Value;
 			if (state < 1) return;
 
-			difficultyMult = DiluvianArtifactPlugin.DiluvifactDifficulty.Value;
-
 			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_DILUVIFACT_NAME", "Artifact of Diluvian");
-			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_DILUVIFACT_DESC", "Enables all Diluvian modifiers.\n" + GetDifficultyMultText() + "\n<style=cStack>>Ally Healing: <style=cDeath>-20%</style>\n>Ally Block Chance: <style=cDeath>Halved</style>\n>Oneshot Protection: <style=cDeath>Disabled</style>\n>Elite Cost: <style=cDeath>-20%</style>\n>Enemies <style=cDeath>cannot be stunned</style> from damage taken.\n>Enemies <style=cDeath>regenerate 2% HP/s</style> outside of combat.\n>Blood Shrines <style=cDeath>disable healing</style> for <style=cDeath>8s</style>.</style>");
+			DiluvianArtifactPlugin.RegisterLanguageToken("ARTIFACT_DILUVIFACT_DESC", "Enables all Diluvian modifiers.\n" + GetDifficultyMultText() + "\n<style=cStack>>Ally Healing: <style=cDeath>-20%</style>\n>Ally Block Chance: <style=cDeath>Halved</style>\n>Oneshot Protection: <style=cDeath>Disabled</style>\n>Elite Cost: <style=cDeath>-20%</style>\n>Enemies <style=cDeath>cannot be stunned</style> from damage taken.\n>Enemies <style=cDeath>regenerate 2% HP/s</style> outside of combat." + GetBloodShrineText() + "</style>");
 
 			SetupSyzygyTokens();
 
-			RunArtifactManager.onArtifactEnabledGlobal += OnArtifactEnabled;
-			RunArtifactManager.onArtifactDisabledGlobal += OnArtifactDisabled;
+			if (state == 1)
+			{
+				RunArtifactManager.onArtifactEnabledGlobal += OnArtifactEnabled;
+				RunArtifactManager.onArtifactDisabledGlobal += OnArtifactDisabled;
+			}
+			else
+			{
+				EnableEffects();
+			}
 		}
 
 		private static string GetDifficultyMultText()
 		{
+			float difficultyMult = DiluvianArtifactPlugin.DiluvifactDifficulty.Value;
 			if (difficultyMult > 1f) return "\n<style=cStack>>Difficulty Multiplier: <style=cDeath>+" + ((difficultyMult - 1f) * 100f).ToString("0.##") + "%</style>";
+			return "";
+		}
+
+		private static string GetBloodShrineText()
+		{
+			if (DiluvianArtifactPlugin.DiluvifactAntiHeal.Value) return "\n>Blood Shrines <style=cDeath>disable healing</style> for <style=cDeath>8s</style>.";
 			return "";
 		}
 
@@ -157,7 +173,7 @@ namespace TPDespair.DiluvianArtifact
 
 				c.EmitDelegate<Func<float>>(() =>
 				{
-					return difficultyMult;
+					return DiluvianArtifactPlugin.DiluvifactDifficulty.Value;
 				});
 
 				c.Emit(OpCodes.Dup);
@@ -300,7 +316,10 @@ namespace TPDespair.DiluvianArtifact
 				c.Emit(OpCodes.Ldloc, 0);
 				c.EmitDelegate<Action<CharacterBody>>((self) =>
 				{
-					if (self) self.AddTimedBuff(RoR2Content.Buffs.HealingDisabled, 8f);
+					if (self && DiluvianArtifactPlugin.DiluvifactAntiHeal.Value)
+					{
+						self.AddTimedBuff(RoR2Content.Buffs.HealingDisabled, 8f);
+					}
 				});
 			}
 			else

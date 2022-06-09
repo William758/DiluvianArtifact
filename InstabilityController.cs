@@ -1,4 +1,4 @@
-using RoR2;
+﻿using RoR2;
 using RoR2.Navigation;
 using RoR2.Projectile;
 using RoR2.UI;
@@ -178,11 +178,11 @@ namespace TPDespair.DiluvianArtifact
 
 				SetupValues();
 
-				Display.ServerSendDifficulty(damageFactor);
+				Display.SetServerDifficulty(damageFactor);
 
-				LunarState.activation2 = 3600f + (45f * timeFactor);
-				LunarState.activation3 = 3600f + (90f * timeFactor);
-				BleedState.activation2 = 3600f + (135f * timeFactor);
+				LunarState.activation2 = 3600f + (30f * timeFactor);
+				LunarState.activation3 = 3600f + (60f * timeFactor);
+				BleedState.activation2 = 3600f + (120f * timeFactor);
 
 				//Debug.LogWarning("Artifact of Instability - BaseDamage : " + baseDamage);
 			}
@@ -265,7 +265,7 @@ namespace TPDespair.DiluvianArtifact
 				baseDamage = 24f * damageFactor;
 
 				MeteorState.UpdateDamage();
-				Display.ServerSendDifficulty(damageFactor);
+				Display.SetServerDifficulty(damageFactor);
 
 				//Debug.LogWarning("Artifact of Instability - BaseDamage : " + baseDamage);
 			}
@@ -297,6 +297,8 @@ namespace TPDespair.DiluvianArtifact
 			{
 				timer -= Time.fixedDeltaTime;
 				stopwatch += Time.fixedDeltaTime;
+
+				Display.SyncTimer();
 			}
 
 			if (timer < 0f)
@@ -330,8 +332,8 @@ namespace TPDespair.DiluvianArtifact
 				{
 					enabled = true;
 					Display.sendSyncTime = true;
-					Display.ServerSendSyncTime(MeteorState.activation);
-					Display.ServerSendDifficulty(damageFactor);
+					Display.SetServerSyncTime(MeteorState.activation);
+					Display.SetServerDifficulty(damageFactor);
 					//Debug.LogWarning("Artifact of Instability - BaseTimer : " + baseTime + " , BaseDamage : " + baseDamage);
 				}
 			}
@@ -349,7 +351,7 @@ namespace TPDespair.DiluvianArtifact
 				MeteorState.ResetState();
 				MeteorState.StartStorm();
 
-				Display.ServerSendSyncTime(FissureState.activation - stopwatch);
+				Display.SetServerSyncTime(FissureState.activation - stopwatch);
 			}
 
 
@@ -359,7 +361,7 @@ namespace TPDespair.DiluvianArtifact
 				FissureState.activated = true;
 				FissureState.ResetState();
 
-				Display.ServerSendSyncTime(ScorchState.activation - stopwatch);
+				Display.SetServerSyncTime(ScorchState.activation - stopwatch);
 			}
 
 
@@ -374,7 +376,7 @@ namespace TPDespair.DiluvianArtifact
 			{
 				NovaState.activated = true;
 
-				Display.ServerSendSyncTime(LunarState.activation - stopwatch);
+				Display.SetServerSyncTime(LunarState.activation - stopwatch);
 			}
 
 
@@ -389,7 +391,7 @@ namespace TPDespair.DiluvianArtifact
 				LunarState.activated = true;
 				LunarState.ResetState(1);
 
-				Display.ServerSendSyncTime(BleedState.activation - stopwatch);
+				Display.SetServerSyncTime(BleedState.activation - stopwatch);
 			}
 
 
@@ -457,17 +459,39 @@ namespace TPDespair.DiluvianArtifact
 			private static string currentTimeText = "";
 			private static string currentDiffText = "";
 
-			internal static void ServerSendSyncTime(float offset, bool force = false)
+			private static float timeSinceSync = 0f;
+
+			internal static void ResetServerSyncTime()
 			{
-				if (sendSyncTime || force)
+				float time = Run.instance.GetRunStopwatch();
+
+				timeSinceSync = 0f;
+				EffectManager.SpawnEffect((EffectIndex)1758000, new EffectData { genericUInt = 2u, genericFloat = time }, true);
+			}
+
+			internal static void SetServerSyncTime(float offset)
+			{
+				if (sendSyncTime)
 				{
 					float time = Run.instance.GetRunStopwatch() + offset;
 
+					timeSinceSync = 0f;
 					EffectManager.SpawnEffect((EffectIndex)1758000, new EffectData { genericUInt = 2u, genericFloat = time }, true);
 				}
 			}
 
-			internal static void ServerSendDifficulty(float value)
+			internal static void ServerSendSyncTime(float offset)
+			{
+				if (sendSyncTime)
+				{
+					float time = Run.instance.GetRunStopwatch() + offset;
+
+					timeSinceSync = 0f;
+					EffectManager.SpawnEffect((EffectIndex)1758000, new EffectData { genericUInt = 4u, genericFloat = time }, true);
+				}
+			}
+
+			internal static void SetServerDifficulty(float value)
 			{
 				EffectManager.SpawnEffect((EffectIndex)1758000, new EffectData { genericUInt = 3u, genericFloat = value }, true);
 			}
@@ -530,6 +554,30 @@ namespace TPDespair.DiluvianArtifact
 				diffTextMesh.richText = true;
 
 				diffTextMesh.SetText("");
+			}
+
+			internal static void SyncTimer()
+			{
+				if (syncTime > 0f && Run.instance)
+				{
+					timeSinceSync += Time.fixedDeltaTime;
+
+					if (timeSinceSync >= 10f)
+					{
+						float runStopwatch = Run.instance.GetRunStopwatch();
+
+						if (runStopwatch < syncTime)
+						{
+							float timeLeft = syncTime - runStopwatch;
+
+							if (timeLeft >= 10f)
+							{
+								timeSinceSync = 0f;
+								ServerSendSyncTime(timeLeft);
+							}
+						}
+					}
+				}
 			}
 
 			internal static void UpdateUI()

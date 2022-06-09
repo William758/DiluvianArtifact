@@ -1,4 +1,4 @@
-using RoR2;
+﻿using RoR2;
 using RoR2.ContentManagement;
 using System.Collections;
 using System.Collections.Generic;
@@ -106,7 +106,7 @@ namespace TPDespair.DiluvianArtifact
 					ZetLunarBleed.buffColor = new Color(0.3f, 0.6f, 1f);
 					ZetLunarBleed.canStack = true;
 					ZetLunarBleed.isDebuff = true;
-					ZetLunarBleed.iconSprite = LegacyResourcesAPI.Load<Sprite>("Textures/BuffIcons/texBuffBleedingIcon");
+					ZetLunarBleed.iconSprite = LegacyResourcesAPI.Load<BuffDef>("BuffDefs/Bleeding").iconSprite;
 
 					buffDefs.Add(ZetLunarBleed);
 				}
