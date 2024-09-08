@@ -13,6 +13,9 @@ namespace TPDespair.DiluvianArtifact
 		private static bool customHaunt = false;
 		private static FieldInfo BlastAttackDamageTypeField;
 
+		private static BuffIndex reactorInvuln = BuffIndex.None;
+		private static BuffIndex waterInvuln = BuffIndex.None;
+
 
 
 		private static int state = 0;
@@ -53,7 +56,7 @@ namespace TPDespair.DiluvianArtifact
 
 			SpawnCard.onSpawnedServerGlobal += OnCardSpawned;
 			FallenChimeraHook();
-			ChimeraDamageResistHook();
+			DamageResistHook();
 
 			// client and server
 			Run.onRunDestroyGlobal += OnRunDestroyed;
@@ -61,6 +64,7 @@ namespace TPDespair.DiluvianArtifact
 
 			BlastAttackDamageTypeField = typeof(BlastAttack).GetField("damageType");
 			MeteorImpactHook();
+			MeteorDamageTypeHook();
 			EffectManagerNetworkingHook();
 
 			BrotherHauntEnterHook();
@@ -70,11 +74,29 @@ namespace TPDespair.DiluvianArtifact
 			HUDUpdateHook();
 		}
 
+		internal static void LateSetup()
+		{
+			if (PluginLoaded("com.TeamMoonstorm.Starstorm2-Nightly"))
+			{
+				reactorInvuln = BuffCatalog.FindBuffIndex("BuffReactor");
+			}
+
+			if (PluginLoaded("com.themysticsword.risingtides"))
+			{
+				waterInvuln = BuffCatalog.FindBuffIndex("RisingTides_WaterInvincibility");
+			}
+		}
+
+		public static bool PluginLoaded(string key)
+		{
+			return BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(key);
+		}
+
 
 
 		private static void DamageTakenHook()
 		{
-			On.RoR2.HealthComponent.TakeDamage += (orig, self, damageInfo) =>
+			On.RoR2.HealthComponent.TakeDamageProcess += (orig, self, damageInfo) =>
 			{
 				orig(self, damageInfo);
 
@@ -85,7 +107,7 @@ namespace TPDespair.DiluvianArtifact
 						CharacterBody body = self.body;
 						if (body && body.teamComponent.teamIndex == TeamIndex.Player)
 						{
-							if (!(body.HasBuff(RoR2Content.Buffs.HiddenInvincibility) || body.HasBuff(RoR2Content.Buffs.Immune)))
+							if (!HasInvulnBuff(body))
 							{
 								if (damageInfo.attacker)
 								{
@@ -113,9 +135,9 @@ namespace TPDespair.DiluvianArtifact
 
 		private static void DegenHook()
 		{
-			On.RoR2.HealthComponent.ServerFixedUpdate += (orig, self) =>
+			On.RoR2.HealthComponent.ServerFixedUpdate += (orig, self, delta) =>
 			{
-				orig(self);
+				orig(self, delta);
 
 				if (self.alive && !self.godMode)
 				{
@@ -123,19 +145,29 @@ namespace TPDespair.DiluvianArtifact
 					if (body)
 					{
 						int buffCount = body.GetBuffCount(DiluvianArtifactContent.Buffs.ZetLunarBleed);
-						bool bodyImmune = body.HasBuff(RoR2Content.Buffs.HiddenInvincibility) || body.HasBuff(RoR2Content.Buffs.Immune);
+						bool bodyImmune = HasInvulnBuff(body);
 
 						if (buffCount > 0 && !bodyImmune)
 						{
 							body.outOfDangerStopwatch = 0f;
 
-							float damage = Mathf.Sqrt(buffCount) * 0.025f * self.combinedHealth * Time.fixedDeltaTime;
+							float damage = Mathf.Sqrt(buffCount) * 0.025f * self.combinedHealth * delta;
 							if (Enabled && InstabilityController.BleedState.activated2) damage *= 1.5f;
 							DirectDamage(self, damage);
 						}
 					}
 				}
 			};
+		}
+
+		internal static bool HasInvulnBuff(CharacterBody body)
+		{
+			if (body.HasBuff(RoR2Content.Buffs.HiddenInvincibility)) return true;
+			if (body.HasBuff(RoR2Content.Buffs.Immune)) return true;
+			if (body.HasBuff(reactorInvuln)) return true;
+			if (body.HasBuff(waterInvuln)) return true;
+
+			return false;
 		}
 
 		private static void ApplyLunarBleed(CharacterBody body, float duration)
@@ -263,9 +295,9 @@ namespace TPDespair.DiluvianArtifact
 			};
 		}
 
-		private static void ChimeraDamageResistHook()
+		private static void DamageResistHook()
 		{
-			IL.RoR2.HealthComponent.TakeDamage += (il) =>
+			IL.RoR2.HealthComponent.TakeDamageProcess += (il) =>
 			{
 				ILCursor c = new ILCursor(il);
 
@@ -273,31 +305,35 @@ namespace TPDespair.DiluvianArtifact
 				bool found = c.TryGotoNext(
 					x => x.MatchLdarg(1),
 					x => x.MatchLdfld<DamageInfo>("damage"),
-					x => x.MatchStloc(6)
+					x => x.MatchStloc(7)
 				);
 
 				if (found)
 				{
 					c.Index += 3;
 
-					c.Emit(OpCodes.Ldloc, 6);
+					c.Emit(OpCodes.Ldloc, 7);
 					c.Emit(OpCodes.Ldloc, 2);
 					c.Emit(OpCodes.Ldarg, 0);
 					c.EmitDelegate<Func<float, TeamIndex, HealthComponent, float>>((damage, atkTeam, healthComponent) =>
 					{
-						CharacterBody self = healthComponent.body;
-
-						if (atkTeam != TeamIndex.Player)
+						if (Enabled && atkTeam != TeamIndex.Player)
 						{
+							CharacterBody self = healthComponent.body;
+
 							if (self && InstabilityController.LunarState.IsUberChimera(self))
 							{
 								damage *= 0.125f;
+							}
+							else if (InstabilityController.MeteorState.activated)
+							{
+								damage *= 0.8f;
 							}
 						}
 
 						return damage;
 					});
-					c.Emit(OpCodes.Stloc, 6);
+					c.Emit(OpCodes.Stloc, 7);
 				}
 				else
 				{
@@ -331,30 +367,34 @@ namespace TPDespair.DiluvianArtifact
 				}
 				else
 				{
-					Debug.LogWarning("MeteorImpactHook:Position Failed");
+					Debug.LogWarning("MeteorImpactHook Failed");
 				}
+			};
+		}
 
+		private static void MeteorDamageTypeHook()
+		{
+			IL.RoR2.MeteorStormController.DetonateMeteor += (il) =>
+			{
+				ILCursor c = new ILCursor(il);
 
-
-				found = c.TryGotoNext(
-					x => x.MatchStfld<BlastAttack>("inflictor")
+				bool found = c.TryGotoNext(
+					x => x.MatchLdfld<MeteorStormController>("blastDamageType")
 				);
 
 				if (found)
 				{
 					c.Index += 1;
 
-					c.Emit(OpCodes.Dup);
-					c.EmitDelegate<Func<DamageType>>(() =>
+					c.EmitDelegate<Func<DamageTypeCombo, DamageTypeCombo>>((damageType) =>
 					{
-						if (Enabled && InstabilityController.NovaState.activated) return DamageType.CrippleOnHit;
-						return DamageType.Generic;
+						if (Enabled && InstabilityController.NovaState.activated) return damageType | DamageType.CrippleOnHit;
+						return damageType;
 					});
-					c.Emit(OpCodes.Stfld, BlastAttackDamageTypeField);
 				}
 				else
 				{
-					Debug.LogWarning("MeteorImpactHook:DamageType Failed");
+					Debug.LogWarning("MeteorDamageTypeHook Failed");
 				}
 			};
 		}

@@ -21,7 +21,7 @@ namespace TPDespair.DiluvianArtifact
 
 	public class DiluvianArtifactPlugin : BaseUnityPlugin
 	{
-		public const string ModVer = "1.1.2";
+		public const string ModVer = "1.2.0";
 		public const string ModName = "DiluvianArtifact";
 		public const string ModGuid = "com.TPDespair.DiluvianArtifact";
 
@@ -38,6 +38,7 @@ namespace TPDespair.DiluvianArtifact
 		public static ConfigEntry<float> DiluvifactDifficulty { get; set; }
 		public static ConfigEntry<bool> DiluvifactAntiHeal { get; set; }
 		public static ConfigEntry<int> UnstabifactEnable { get; set; }
+		public static ConfigEntry<bool> UnstabifactDisplayDifficulty { get; set; }
 		public static ConfigEntry<float> UnstabifactBaseTimer { get; set; }
 		public static ConfigEntry<float> UnstabifactPhaseTimer { get; set; }
 		public static ConfigEntry<int> EclifactEnable { get; set; }
@@ -59,12 +60,20 @@ namespace TPDespair.DiluvianArtifact
 			ZetUnstabifact.Init();
 			ZetEclifact.Init();
 
+			RoR2Application.onLoad += LateSetup;
+
 			//On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
 		}
 
 		public void FixedUpdate()
 		{
 			InstabilityController.OnFixedUpdate();
+		}
+
+		private static void LateSetup()
+		{
+			Diluvifact.LateSetup();
+			ZetUnstabifact.LateSetup();
 		}
 
 
@@ -80,7 +89,7 @@ namespace TPDespair.DiluvianArtifact
 				"Diluvian and Eclipse 8 change some text."
 			);
 			SyzygyHideScore = Config.Bind(
-				"Artifacts", "syzygyHideScore", true,
+				"Artifacts", "syzygyHideScore", false,
 				"Diluvian and Eclipse 8 hides scores on run report."
 			);
 			DiluvifactDifficulty = Config.Bind(
@@ -94,6 +103,10 @@ namespace TPDespair.DiluvianArtifact
 			UnstabifactEnable = Config.Bind(
 				"Artifacts", "unstabifactEnable", 1,
 				"Artifact of Instability. 0 = Disabled, 1 = Artifact Available, 2 = Always Active"
+			);
+			UnstabifactDisplayDifficulty = Config.Bind(
+				"Artifacts", "unstabifactDisplayDifficulty", false,
+				"Show Difficulty of Instability on HUD."
 			);
 			UnstabifactBaseTimer = Config.Bind(
 				"Artifacts", "unstabifactBaseTime", 360f,

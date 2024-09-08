@@ -610,7 +610,8 @@ namespace TPDespair.DiluvianArtifact
 				{
 					string text = "";
 
-					if (difficulty > 0f) text = FormatDifficulty(difficulty);
+					float diffValue = DiluvianArtifactPlugin.UnstabifactDisplayDifficulty.Value ? difficulty : 0f;
+					if (diffValue > 0f) text = FormatDifficulty(diffValue);
 
 					if (text != currentDiffText)
 					{

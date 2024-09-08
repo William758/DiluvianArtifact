@@ -29,25 +29,25 @@ namespace TPDespair.DiluvianArtifact
 		private static void EnableEffects()
 		{
 			IL.RoR2.CharacterMaster.OnBodyStart += Eclipse1Hook;
-			IL.RoR2.HoldoutZoneController.FixedUpdate += Eclipse2Hook;
+			IL.RoR2.HoldoutZoneController.DoUpdate += Eclipse2Hook;
 			IL.RoR2.GlobalEventManager.OnCharacterHitGroundServer += Eclipse3Hook;
 			IL.RoR2.CharacterBody.RecalculateStats += Eclipse4Hook;
 			IL.RoR2.HealthComponent.Heal += Eclipse5Hook;
 			IL.RoR2.DeathRewards.OnKilledServer += Eclipse6Hook;
 			IL.RoR2.CharacterBody.RecalculateStats += Eclipse7Hook;
-			IL.RoR2.HealthComponent.TakeDamage += Eclipse8Hook;
+			IL.RoR2.HealthComponent.TakeDamageProcess += Eclipse8Hook;
 		}
 
 		private static void DisableEffects()
 		{
 			IL.RoR2.CharacterMaster.OnBodyStart -= Eclipse1Hook;
-			IL.RoR2.HoldoutZoneController.FixedUpdate -= Eclipse2Hook;
+			IL.RoR2.HoldoutZoneController.DoUpdate -= Eclipse2Hook;
 			IL.RoR2.GlobalEventManager.OnCharacterHitGroundServer -= Eclipse3Hook;
 			IL.RoR2.CharacterBody.RecalculateStats -= Eclipse4Hook;
 			IL.RoR2.HealthComponent.Heal -= Eclipse5Hook;
 			IL.RoR2.DeathRewards.OnKilledServer -= Eclipse6Hook;
 			IL.RoR2.CharacterBody.RecalculateStats -= Eclipse7Hook;
-			IL.RoR2.HealthComponent.TakeDamage -= Eclipse8Hook;
+			IL.RoR2.HealthComponent.TakeDamageProcess -= Eclipse8Hook;
 		}
 
 

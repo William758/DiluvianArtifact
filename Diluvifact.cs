@@ -9,6 +9,11 @@ namespace TPDespair.DiluvianArtifact
 {
 	public static class Diluvifact
 	{
+		private static BodyIndex artifactShellBodyIndex = BodyIndex.None;
+		private static BodyIndex goldenTitanBodyIndex = BodyIndex.None;
+
+
+
 		private static int state = 0;
 
 		public static bool Enabled
@@ -32,7 +37,7 @@ namespace TPDespair.DiluvianArtifact
 		{
 			IL.RoR2.Run.RecalculateDifficultyCoefficentInternal += DifficultyHook;
 			On.RoR2.HealthComponent.Heal += HealMultHook;
-			IL.RoR2.HealthComponent.TakeDamage += BlockChanceHook;
+			IL.RoR2.HealthComponent.TakeDamageProcess += BlockChanceHook;
 			On.RoR2.CharacterBody.RecalculateStats += OneshotHook;
 			IL.RoR2.CombatDirector.AttemptSpawnOnTarget += EliteCostHook;
 			On.RoR2.SetStateOnHurt.Start += HitStunHook;
@@ -44,7 +49,7 @@ namespace TPDespair.DiluvianArtifact
 		{
 			IL.RoR2.Run.RecalculateDifficultyCoefficentInternal -= DifficultyHook;
 			On.RoR2.HealthComponent.Heal -= HealMultHook;
-			IL.RoR2.HealthComponent.TakeDamage -= BlockChanceHook;
+			IL.RoR2.HealthComponent.TakeDamageProcess -= BlockChanceHook;
 			On.RoR2.CharacterBody.RecalculateStats -= OneshotHook;
 			IL.RoR2.CombatDirector.AttemptSpawnOnTarget -= EliteCostHook;
 			On.RoR2.SetStateOnHurt.Start -= HitStunHook;
@@ -106,6 +111,12 @@ namespace TPDespair.DiluvianArtifact
 			return "";
 		}
 
+		internal static void LateSetup()
+		{
+			artifactShellBodyIndex = BodyCatalog.FindBodyIndex("ArtifactShellBody");
+			goldenTitanBodyIndex = BodyCatalog.FindBodyIndex("TitanGoldBody");
+		}
+
 
 
 		private static void SetupSyzygyTokens()
@@ -145,8 +156,8 @@ namespace TPDespair.DiluvianArtifact
 			}
 
 			DiluvianArtifactPlugin.RegisterSyzygyToken("STATNAME_TOTALTIMEALIVE", "Screentime");
-			DiluvianArtifactPlugin.RegisterSyzygyToken("STATNAME_TOTALDEATHS", "Stepped out");
-			DiluvianArtifactPlugin.RegisterSyzygyToken("STATNAME_HIGHESTLEVEL", "Advancements made");
+			DiluvianArtifactPlugin.RegisterSyzygyToken("STATNAME_TOTALDEATHS", "Disruptions");
+			DiluvianArtifactPlugin.RegisterSyzygyToken("STATNAME_HIGHESTLEVEL", "Evolution");
 			DiluvianArtifactPlugin.RegisterSyzygyToken("STATNAME_TOTALGOLDCOLLECTED", "Wealth gotten");
 			DiluvianArtifactPlugin.RegisterSyzygyToken("STATNAME_TOTALITEMSCOLLECTED", "Props worn");
 			DiluvianArtifactPlugin.RegisterSyzygyToken("STATNAME_TOTALSTAGESCOMPLETED", "Acts progressed");
@@ -251,10 +262,7 @@ namespace TPDespair.DiluvianArtifact
 				x => x.MatchConvR4(),
 				x => x.MatchLdarg(0),
 				x => x.MatchLdfld<CombatDirector>("currentActiveEliteTier"),
-				x => x.MatchLdfld(typeof(CombatDirector.EliteTierDef).GetField("costMultiplier")),
-				x => x.MatchMul(),
-				x => x.MatchConvI4(),
-				x => x.MatchStloc(1)
+				x => x.MatchLdfld(typeof(CombatDirector.EliteTierDef).GetField("costMultiplier"))
 			);
 
 			if (found)
@@ -291,9 +299,9 @@ namespace TPDespair.DiluvianArtifact
 
 			if (self.outOfDanger && self.teamComponent.teamIndex == TeamIndex.Monster)
 			{
-				if (!self.HasBuff(RoR2Content.Buffs.HiddenInvincibility) && !self.HasBuff(RoR2Content.Buffs.Immune))
+				if (!ZetUnstabifact.HasInvulnBuff(self))
 				{
-					if (self.baseNameToken != "ARTIFACTSHELL_BODY_NAME" && self.baseNameToken != "TITANGOLD_BODY_NAME")
+					if (self.bodyIndex != artifactShellBodyIndex && self.bodyIndex != goldenTitanBodyIndex)
 					{
 						self.regen += self.maxHealth * 0.02f;
 					}

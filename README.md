@@ -22,6 +22,8 @@ Use r2modman or place inside of Risk of Rain 2/Bepinex/Plugins/
 
 ## Changelog:
 
+v1.2.0 - Updated for SotS.
+
 v1.1.2 - Fixed AlwaysActive configs. Fixed LunarBleed icon. Sync Instability timer every 10 seconds.
 
 v1.1.1 - EclipseArtifacts compatibility.
